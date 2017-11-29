@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<Credits>
+	<Line size="80">Credits</Line>
+	<Line> </Line>
+	<Line size="40">Developers</Line>
+	<Line>Antoine</Line>
+	<Line>Philippe</Line>
+	<Line> </Line>
+	<Line size="40">Designers</Line>
+	<Line>Antoine</Line>
+	<Line>Philippe</Line>
+	<EndLine size="90">Thanks for playing !</EndLine>
+</Credits>

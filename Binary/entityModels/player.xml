@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<Model>
+	<Rect W="30" H="45"/>
+	<GfxData texID="0" texState="0"/>
+	<Status name="Player" HP="100" knockback="5.0"/>
+	<DynamicData/>
+	<CollisionData w="1.875" h="2.8125" collType="player"/>
+	<PlayerControl/>
+</Model>

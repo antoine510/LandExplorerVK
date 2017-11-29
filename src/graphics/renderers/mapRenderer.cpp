@@ -23,7 +23,7 @@ void initMapRenderer(MapRenderer* mapRenderer, Graphics* gfx)
     mapRenderer->blockColors[BACKWALL_TYPES_OFFSET + BACKWALL_DIRT] = SDL_MapRGBA(mapRenderer->pixels->format, 88, 61, 46, 255);
     mapRenderer->blockColors[BACKWALL_TYPES_OFFSET + BACKWALL_ROCK] = SDL_MapRGBA(mapRenderer->pixels->format, 52, 52, 52, 255);
 
-    mapRenderer->mapp = createEmptyTexture(gfx->renderer, TERRAIN_WIDTH, TERRAIN_HEIGHT);
+	mapRenderer->mapp = new Sprite(TERRAIN_WIDTH, TERRAIN_HEIGHT);
 }
 
 void initMapRendererStartPos(MapRenderer* mapRenderer, Graphics* gfx)
@@ -43,25 +43,25 @@ void updateMapRendering(MapRenderer* mapRenderer, Graphics* gfx, Map* mapp, Terr
 
     if(newx != mapRenderer->x)
     {
-        Uint32 xmin = min(newx, mapRenderer->x), xmax = max(newx, mapRenderer->x);
+        Uint32 xmin = std::min(newx, mapRenderer->x), xmax = std::max(newx, mapRenderer->x);
         updateMapRect(mapRenderer, terrain, xmin, newy, xmax, newy2);
         mapRenderer->x = newx;
     }
     if(newx2 != mapRenderer->x2)
     {
-        Uint32 xmin = min(newx2, mapRenderer->x2), xmax = max(newx2, mapRenderer->x2);
+        Uint32 xmin = std::min(newx2, mapRenderer->x2), xmax = std::max(newx2, mapRenderer->x2);
         updateMapRect(mapRenderer, terrain, xmin, newy, xmax, newy2);
         mapRenderer->x2 = newx2;
     }
     if(newy != mapRenderer->y)
     {
-        Uint32 ymin = min(newy, mapRenderer->y), ymax = max(newy, mapRenderer->y);
+        Uint32 ymin = std::min(newy, mapRenderer->y), ymax = std::max(newy, mapRenderer->y);
         updateMapRect(mapRenderer, terrain, newx, ymin, newx2, ymax);
         mapRenderer->y = newy;
     }
     if(newy2 != mapRenderer->y2)
     {
-        Uint32 ymin = min(newy2, mapRenderer->y2), ymax = max(newy2, mapRenderer->y2);
+        Uint32 ymin = std::min(newy2, mapRenderer->y2), ymax = std::max(newy2, mapRenderer->y2);
         updateMapRect(mapRenderer, terrain, newx, ymin, newx2, ymax);
         mapRenderer->y2 = newy2;
     }
@@ -114,7 +114,6 @@ Uint32 processColorIntensity(Uint32 base, Uint8 light)
 
 void renderMap(MapRenderer* mapRenderer, Graphics* gfx, Map* mapp, Level* level)
 {
-    startFrameTexturesRendering(gfx->renderer);
     renderBackground(gfx->bgRenderer, gfx, BG_BIOMES);
 
 	float scaling = (mapp->scalingFactor >= 0) ? (float)(1 << mapp->scalingFactor) : 1.0f / (float)(1 << -mapp->scalingFactor);
@@ -122,15 +121,16 @@ void renderMap(MapRenderer* mapRenderer, Graphics* gfx, Map* mapp, Level* level)
     {
         updateMapRect(mapRenderer, level->terrain, (gfx->viewOrigin.x - myDisplayMode.w / 2) / BLOC_SIZE, (gfx->viewOrigin.y - myDisplayMode.h / 2) / BLOC_SIZE,
 			(gfx->viewOrigin.x + myDisplayMode.w / 2) / BLOC_SIZE, (gfx->viewOrigin.y + myDisplayMode.h / 2) / BLOC_SIZE);
-        updateTextureFromSurface(mapRenderer->mapp, mapRenderer->pixels);   //Update the map texture from surface data
+		mapRenderer->mapp->getStagingBuffer().update(mapRenderer->pixels->pixels);
+		mapRenderer->mapp->stageImage();
         mapp->panningPos.x = (int)(gfx->viewOrigin.x * scaling / BLOC_SIZE);     //Center the view on the world camera
         mapp->panningPos.y = (int)(TERRAIN_HEIGHT * scaling - gfx->viewOrigin.y * scaling / BLOC_SIZE);
         mapp->mapUpdated = 1;
     }
 
-    setTexturePos(mapRenderer->mapp, -mapp->panningPos.x, -mapp->panningPos.y);
-    setTextureScale(mapRenderer->mapp, scaling);
-    drawTexture(mapRenderer->mapp);
+	mapRenderer->mapp->setScale(scaling);
+	mapRenderer->mapp->setPosition(-mapp->panningPos.x, -mapp->panningPos.y);
+	mapRenderer->mapp->draw(gfx->cmdBuf);
 
     int i;
     Uint32 target = COMP_GFXDATA + COMP_RECT;
@@ -138,16 +138,15 @@ void renderMap(MapRenderer* mapRenderer, Graphics* gfx, Map* mapp, Level* level)
     {
         if((level->entities->components[i] & target) == target && gfx->texPack->texSets[level->entities->gfxData[i].texID]->mapIcon != NULL)
         {
-            blitMapIcon(gfx->texPack, &level->entities->gfxData[i], level->entities->rect[i], scaling, mapp->panningPos);
+            blitMapIcon(gfx->texPack, gfx->cmdBuf, &level->entities->gfxData[i], level->entities->rect[i], scaling, mapp->panningPos);
         }
     }
-    endFrameTexturesRendering();
 }
 
 void destroyMapRenderer(MapRenderer* mapRenderer)
 {
     SDL_FreeSurface(mapRenderer->pixels);
-    destroyTexture(mapRenderer->mapp);
+    delete mapRenderer->mapp;
 }
 
 

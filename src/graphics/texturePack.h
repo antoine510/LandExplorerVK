@@ -28,12 +28,12 @@ typedef struct TexturePack {
 
 TexturePack* initTexturePack(Graphics* gfx);
 
-void blitBreak(TexturePack* texPack, int breakingStep, Uint32 x, Uint32 y);
-void blitMapIcon(TexturePack* texPack, GfxData* gfxData, SDL_Rect rect, float scalingFactor, SDL_Point panningPos);
-void blitEntity(TexturePack* texPack, GfxData* gfxData, SDL_Rect rect);
-void blitHearth(TexturePack* texPackk, SDL_Point pos, float ratioFull);
-void blitSlot(TexturePack* texPack, SDL_Point pos, float sizeMul);
-void blitItem(TexturePack* texPack, SDL_Point pos, int itemID);
+void blitBreak(TexturePack* texPack, vk::CommandBuffer& cmdBuf, int breakingStep, Uint32 x, Uint32 y);
+void blitMapIcon(TexturePack* texPack, vk::CommandBuffer& cmdBuf, GfxData* gfxData, SDL_Rect rect, float scalingFactor, SDL_Point panningPos);
+void blitEntity(TexturePack* texPack, vk::CommandBuffer& cmdBuf, GfxData* gfxData, SDL_Rect rect);
+void blitHearth(TexturePack* texPackk, vk::CommandBuffer& cmdBuf, SDL_Point pos, float ratioFull);
+void blitSlot(TexturePack* texPack, vk::CommandBuffer& cmdBuf, SDL_Point pos, float sizeMul);
+void blitItem(TexturePack* texPack, vk::CommandBuffer& cmdBuf, SDL_Point pos, int itemID);
 void texPackFrameReset(TexturePack* texPack);
 
 void destroyTexturePack(TexturePack* texPack);

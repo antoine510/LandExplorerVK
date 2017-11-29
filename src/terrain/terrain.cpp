@@ -67,7 +67,7 @@ Bloc* getBlockPtr(Terrain* terrain, Uint32 x, Uint32 y) { return terrain->blocks
 Bloc* getBackwallPtr(Terrain* terrain, Uint32 x, Uint32 y) { return terrain->backwall + getBlockIndex(x, y); }
 
 void getBlocCoordinatesFromPointer(Terrain* terrain, Bloc* bloc, Uint32* x, Uint32* y) {
-	Uint32 offset = bloc - terrain->blocks;
+	Uint32 offset = Uint32(bloc - terrain->blocks);
 	*x = offset%terrainWidth;
 	*y = offset / terrainWidth;
 }
@@ -199,7 +199,7 @@ Uint32 getBlocChunck(Uint32 x, Uint32 y) {
 }
 
 ChunckCoords getBlocChunckCoords(Uint32 x, Uint32 y) {
-	return ChunckCoords{ x / CHUNCK_WIDTH, y / CHUNCK_WIDTH };
+	return ChunckCoords{ Uint16(x / CHUNCK_WIDTH), Uint16(y / CHUNCK_HEIGHT)};
 }
 
 Uint32 getChunck(Uint32 x, Uint32 y) {

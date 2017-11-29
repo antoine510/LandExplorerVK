@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "ui/credits.h"
+#include "graphics/sprite.h"
 #include <SDL_ttf.h>
 
 typedef struct CreditsRenderer {

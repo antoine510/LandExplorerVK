@@ -1,5 +1,5 @@
 #include "editorRenderer.h"
-#include "../graphics.h"
+#include "graphics/graphics.h"
 #include <cstring>
 
 void initEditorRenderer(EditorRenderer* editorRenderer, Graphics* gfx)
@@ -8,13 +8,10 @@ void initEditorRenderer(EditorRenderer* editorRenderer, Graphics* gfx)
     editorRenderer->font = TTF_OpenFont("txt.ttf", 32);
 
     SDL_Color color = {255, 255, 0, 255};
-    SDL_Surface* t = TTF_RenderText_Blended(editorRenderer->font, "Editor", color);
-    editorRenderer->modeNameTexture = createTextureFromSurface(gfx->renderer, t);
-	setTextureOriginRatio(editorRenderer->modeNameTexture, 0.0f, 1.0f);
-	setTexturePos(editorRenderer->modeNameTexture, -myDisplayMode.w/2 + 10, myDisplayMode.h/2 - 10);
-    SDL_FreeSurface(t);
+	editorRenderer->modeNameTexture = new Sprite("Editor", color, editorRenderer->font);
+	editorRenderer->modeNameTexture->setPosition(10, 10);
 
-    t = TTF_RenderText_Blended(editorRenderer->font, "Nom du module : ", color);
+    SDL_Surface* t = TTF_RenderText_Blended(editorRenderer->font, "Nom du module : ", color);
     editorRenderer->moduleTextTexture = createTextureFromSurface(gfx->renderer, t);
 	setTextureOriginRatio(editorRenderer->moduleTextTexture, 0.5f, 0.5f);
     setTexturePos(editorRenderer->moduleTextTexture, 0, 0);
@@ -38,13 +35,13 @@ void initEditorRenderer(EditorRenderer* editorRenderer, Graphics* gfx)
 
     t = SDL_CreateRGBSurface(0, 1, 1, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
     SDL_FillRect(t, NULL, SDL_MapRGBA(t->format, 0, 0, 255, 64));
-    editorRenderer->selectModuleTex = createTextureFromSurface(gfx->renderer, t);
+    editorRenderer->selectModuleTex = new Sprite(t);
     SDL_FreeSurface(t);
 
     t = SDL_CreateRGBSurface(0, 1, 1, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
     SDL_FillRect(t, NULL, SDL_MapRGBA(t->format, 0, 0, 0, 64));
-    editorRenderer->bgOverlay = createTextureFromSurface(gfx->renderer, t);
-    setTextureFullscreen(editorRenderer->bgOverlay);
+    editorRenderer->bgOverlay = new Sprite(t);
+    editorRenderer->bgOverlay->setFullscreen();
     SDL_FreeSurface(t);
 }
 
@@ -65,7 +62,6 @@ void renderEditor(Graphics* gfx, Editor* editor)
         editor->textChanged = false;
     }
 
-    startFrameTexturesRendering(gfx->renderer);
     switch (editor->mode)
     {
     case VIEWING: break;
@@ -100,18 +96,16 @@ void renderEditor(Graphics* gfx, Editor* editor)
         break;
     }
 
-    drawTexture(gfx->editorRenderer.modeNameTexture);
-
-    endFrameTexturesRendering();
+    gfx->editorRenderer.modeNameTexture->draw(gfx->cmdBuf);
 }
 
 void destroyEditorRenderer(EditorRenderer* editorRenderer)
 {
     TTF_CloseFont(editorRenderer->font);
-    if(editorRenderer->moduleTextTexture != NULL) destroyTexture(editorRenderer->moduleTextTexture);
-    destroyTexture(editorRenderer->modeNameTexture);
-    destroyTexture(editorRenderer->selectRefTex);
-    destroyTexture(editorRenderer->selectModuleTex);
-    destroyTexture(editorRenderer->bgOverlay);
+	delete editorRenderer->moduleTextTexture;
+    delete editorRenderer->modeNameTexture;
+	delete editorRenderer->selectRefTex;
+	delete editorRenderer->selectModuleTex;
+	delete editorRenderer->bgOverlay;
 }
 

@@ -35,16 +35,16 @@ void Sprite::teardownSpriteRendering() {
 	_shaders.clear();
 }
 
-Sprite::Sprite(const std::string& path) : StagedImage(path) {
-	setScreenSize(_w, _h);
+Sprite::Sprite(const std::string& path) : StagedImage(path), _realSize(_w, _h) {
+	setScreenSize(_realSize);
 }
 
-Sprite::Sprite(const std::string& text, const SDL_Color& color, TTF_Font* font) : StagedImage(TTF_RenderText_Blended(font, text.c_str(), color)) {
-	setScreenSize(_w, _h);
+Sprite::Sprite(const std::string& text, const SDL_Color& color, TTF_Font* font) : StagedImage(TTF_RenderText_Blended(font, text.c_str(), color)), _realSize(_w, _h) {
+	setScreenSize(_realSize);
 }
 
-Sprite::Sprite(unsigned int width, unsigned int height) : StagedImage(width, height) {
-	setScreenSize(_w, _h);
+Sprite::Sprite(unsigned int width, unsigned int height) : StagedImage(width, height), _realSize(_w, _h) {
+	setScreenSize(_realSize);
 }
 
 Sprite::~Sprite() {

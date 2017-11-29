@@ -3,6 +3,7 @@
 #include "common.h"
 #include "map.h"
 #include "level.h"
+#include "graphics/sprite.h"
 
 typedef struct MapRenderer {
     Sprite* mapp;

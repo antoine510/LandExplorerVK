@@ -65,7 +65,7 @@ void mainLoop(LandExplorer* landExplorer)
             renderEditor(landExplorer->gfx, landExplorer->editor);
             break;
         case MURESULT_LEVEL_LOAD:
-            renderBackground(landExplorer->gfx->bgRenderer, landExplorer->gfx->cmdBuf, landExplorer->gfx, BG_CREATION); //Signal the user we are loading the level
+            renderBackground(landExplorer->gfx->bgRenderer, landExplorer->gfx, BG_CREATION); //Signal the user we are loading the level
 			presentFrame(landExplorer->gfx);
 			startFrame(landExplorer->gfx);
             landExplorer->level = initLevel(&landExplorer->gfx->viewOrigin);

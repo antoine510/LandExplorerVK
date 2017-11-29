@@ -26,7 +26,7 @@ static bool checkTranferable(Uint8 type, Uint8 liquidLevel);
 
 WaterManager* waterman_create()
 {
-    WaterManager* waterman = calloc(1, sizeof(WaterManager));
+    WaterManager* waterman = (WaterManager*)calloc(1, sizeof(WaterManager));
 
     return waterman;
 }
@@ -265,8 +265,8 @@ bool checkTranferable(Uint8 type, Uint8 liquidLevel)
 
 int activeChunckComparator(const void* a, const void* b)        //Descending order on Coordinates
 {
-    const ChunckCoords *arg1 = a;
-    const ChunckCoords *arg2 = b;
+    const ChunckCoords *arg1 = (const ChunckCoords*)a;
+    const ChunckCoords *arg2 = (const ChunckCoords*)b;
 
     return (arg1->y == arg2->y) ? arg1->x - arg2->x : arg2->y - arg1->y;
 }

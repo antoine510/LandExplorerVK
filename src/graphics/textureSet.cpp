@@ -9,7 +9,7 @@ TextureSet* createTextureSet(xmlNodePtr texSetNode, const char* path)
     texSet->curUser = 0;
     texSet->animated = 0;
 
-    Texture* stateTex;
+    Sprite* stateTex;
     xmlNodePtr texture = texSetNode->children;
     while(texture->type == XML_TEXT_NODE) texture = texture->next;
 
@@ -18,24 +18,24 @@ TextureSet* createTextureSet(xmlNodePtr texSetNode, const char* path)
     {
 		std::string filename(path);
 		filename += asStringl(texture, "filename");
-        stateTex = createTextureFromFile(renderer, filename.c_str());
+		stateTex = new Sprite(filename);
 
         if(checkName(texture, "state")) {
             setTexture(texSet, textureCount, stateTex);
             textureCount++;
         } else if (checkName(texture, "animation")) {
             int frameWidth = asIntl(texture, "frameWidth");
-            setTextureClipSize(stateTex, frameWidth, stateTex->h);
+			stateTex->setClipSize(frameWidth, stateTex->height());
 
             setTexture(texSet, textureCount, stateTex);
 
-            Animation* anim = initAnimation(textureCount, stateTex->w, frameWidth, asIntl(texture, "delay"), asBooll(texture, "loop"));
+            Animation* anim = initAnimation(textureCount, stateTex->width(), frameWidth, asIntl(texture, "delay"), asBooll(texture, "loop"));
             setAnimation(texSet, anim, animCount);
 
             animCount++;
             textureCount++;
         } else if (checkName(texture, "mapIcon")) {
-			setTextureOriginRatio(stateTex, 0.5f, 0.5f);
+			stateTex->setOrigin(0.5f, 0.5f);
             setMapIcon(texSet, stateTex);
         }
 
@@ -73,7 +73,7 @@ void setTexSetColorMod(TextureSet* texSet, SDL_Color* color)
     }
 }
 
-Texture* getTexture(TextureSet* texSet, int textureID)
+Sprite* getTexture(TextureSet* texSet, int textureID)
 {
     if(!texSet->animated) return texSet->textures[textureID];
 
@@ -84,8 +84,7 @@ Texture* getTexture(TextureSet* texSet, int textureID)
             reset(texSet->animations[texSet->curAnim[texSet->curUser]], texSet->curUser);
         texSet->curAnim[texSet->curUser] = animID;
         texSet->curUser++;
-        setTextureClip(texSet->textures[texSet->animations[animID]->textureID],
-                       getFrameClip(texSet->animations[animID], texSet->curUser -1), 0);
+		texSet->textures[texSet->animations[animID]->textureID]->setClip(getFrameClip(texSet->animations[animID], texSet->curUser - 1), 0);
         return texSet->textures[texSet->animations[animID]->textureID];
     }
     else        //Animation
@@ -110,12 +109,12 @@ void destroyTextureSet(TextureSet* texSet)
     int i;
     for(i = 0; i < MAX_TEXTURE_COUNT; i++)
     {
-        if(texSet->textures[i] != NULL) destroyTexture(texSet->textures[i]);
+        delete texSet->textures[i];
     }
     for(i = 0; i < MAX_ANIMATION_COUNT; i++)
     {
-        if(texSet->animations[i] != NULL) destroyAnimation(texSet->animations[i]);
+        if(texSet->animations[i] != nullptr) destroyAnimation(texSet->animations[i]);
     }
-    destroyTexture(texSet->mapIcon);
+    delete texSet->mapIcon;
     free(texSet);
 }

@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+
+<blockTypes>
+
+	<Bloc id="0" opacity="1">
+		<Transparent transparency="255"/>
+	</Bloc>
+	
+	<Bloc id="1" opacity="2">
+		<Solid/>
+		<CustomValueFunction function="edges"/>
+	</Bloc>
+	
+	<Bloc id="2" opacity="3">
+		<Solid/>
+		<CustomValueFunction function="edges"/>
+	</Bloc>
+	
+	<Bloc id="3" opacity="1">
+		<Liquid/>
+		<CustomValueFunction function="liquid"/>
+		<Transparent transparency="64"/>
+	</Bloc>
+	
+	<Bloc id="4" opacity="3">
+		<Solid/>
+		<CustomValueFunction function="edges"/>
+	</Bloc>
+	
+	<Bloc id="5" opacity="2">
+		<Solid/>
+		<CustomValueFunction function="edges"/>
+	</Bloc>
+	
+	<Bloc id="6" opacity="1">
+		<Transparent transparency="0"/>
+	</Bloc>
+	
+	<Bloc id="7" opacity="2">
+		<Solid/>
+		<CustomValueFunction function="edges"/>
+	</Bloc>
+	
+	<Bloc id="8" opacity="2">
+		<Solid/>
+		<CustomValueFunction function="edges"/>
+	</Bloc>
+	
+	<Backwall id="0" opacity="1">
+		<CustomValueFunction function="edges"/>
+	</Backwall>
+	
+	<Backwall id="1" opacity="1">
+		<CustomValueFunction function="edges"/>
+	</Backwall>
+	
+	<Backwall id="2" opacity="1">
+		<CustomValueFunction function="edges"/>
+	</Backwall>
+
+</blockTypes>

@@ -18,21 +18,22 @@ public:
 	~Sprite();
 
 	void setScale(float scale) {
-		setScreenSize(unsigned int(_wreal * scale), unsigned int(_hreal * scale));
+		setScreenSize(_realSize * scale);
 	}
 	void setFullscreen();
 
 	void setPosition(int posX, int posY) {
-		_pushConsts.pos.x = -1.0f + (float(posX) - float(_wreal) * origin.x) / (myDisplayMode.w >> 1);
-		_pushConsts.pos.y = -1.0f + (float(posY) - float(_hreal) * origin.y) / (myDisplayMode.h >> 1);
+		_pushConsts.pos = Vec2(-1, -1) + 2.f * _screenOrigin + (Vec2(posX, posY) - _realSize * _origin) / Vec2(myDisplayMode.w >> 1, myDisplayMode.h >> 1);
 	}
 
-	void setOrigin(float rX, float rY) { origin.x = rX; origin.y = rY; }
+	void setOrigin(float rX, float rY) { _origin = Vec2(rX, rY); }
+	void setScreenOrigin(float rX, float rY) { _screenOrigin = Vec2(rX, rY); }
 
 	void setClipSize(unsigned int wc, unsigned int hc) {
+		_realSize = Vec2(wc, hc);
 		_pushConsts.texCoords.z = float(wc) / _w;
 		_pushConsts.texCoords.w = float(hc) / _h;
-		setScreenSize(wc, hc);
+		setScreenSize(_realSize);
 	}
 	void setClip(unsigned int ox, unsigned int oy) {
 		_pushConsts.texCoords.x = ox * _pushConsts.texCoords.z;
@@ -68,14 +69,15 @@ private:
 		glm::vec4 colorAlphaMod;
 		glm::vec2 pos;
 	};
-	void setScreenSize(unsigned int w, unsigned int h) {
-		_pushConsts.sizeRot[0][0] = float(w) / (myDisplayMode.w >> 1);
-		_pushConsts.sizeRot[1][1] = float(h) / (myDisplayMode.h >> 1);
-		_wreal = w; _hreal = h;
+
+	void setScreenSize(Vec2 size) {
+		_pushConsts.sizeRot[0][0] = size.x / (myDisplayMode.w >> 1);
+		_pushConsts.sizeRot[1][1] = size.y / (myDisplayMode.h >> 1);
 	}
 
-	unsigned int _wreal, _hreal;
-	glm::vec2 origin;	// Normalized origin vector
+	Vec2 _realSize;
+	Vec2 _origin;		// Normalized origin vector
+	Vec2 _screenOrigin;	// Normalized screen origin vector
 	PushConstants _pushConsts;
 };
 

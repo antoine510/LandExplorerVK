@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "player/playerController.h"
+#include "graphics/sprite.h"
 
 typedef struct PlayerInterfaceRenderer {
     Sprite* deathTextTexture;

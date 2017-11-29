@@ -68,7 +68,7 @@ void setDisplayFullscreen(Graphics* gfx, bool fullscreen) {
 	SDL_SetWindowFullscreen(gfx->window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 }
 
-void renderLevel(Graphics* gfx, Level* level) {
+/*void renderLevel(Graphics* gfx, Level* level) {
 	gfx->texPack->skyColor = level->skyColor;
 
 	Vec2 playerPos = level->entities->collData[level->playerID].pos;
@@ -83,7 +83,7 @@ void renderLevel(Graphics* gfx, Level* level) {
 	renderBlocScreen(chunckRenderer);
 
 	renderPlayerInterface(gfx, level->playerControl);
-}
+}*/
 
 void initCamera(Graphics* gfx, Entities* entities) {
 	int i;

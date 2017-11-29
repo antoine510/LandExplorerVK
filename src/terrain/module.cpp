@@ -1,20 +1,20 @@
 #include "module.h"
 #include <cstring>
-#include "../mathUtility.h"
+#include "utility/mathUtility.h"
 #include "terrainGeneration.h"
-#include "../level.h"
-#include "../entityModels.h"
-#include "../lightSource.h"
+#include "level.h"
+#include "entityModels.h"
+#include "lightSource.h"
 
 static Module* createModule(SDL_Point size);
 
 Module* createModule(SDL_Point size)
 {
-    Module* module = calloc(1, sizeof(Module));
+    Module* module = (Module*)calloc(1, sizeof(Module));
 
     module->size = size;
-    module->blocks = malloc(size.x * size.y * sizeof(Uint8));
-    module->backwall = malloc(size.x * size.y * sizeof(Uint8));
+    module->blocks = (Uint8*)malloc(size.x * size.y * sizeof(Uint8));
+    module->backwall = (Uint8*)malloc(size.x * size.y * sizeof(Uint8));
 
     return module;
 }
@@ -28,7 +28,7 @@ void destroyModule(Module* module)
 
 Module* getModuleFromTerrain(Terrain* terrain, SDL_Rect rect)
 {
-    Module* module = createModule((SDL_Point){rect.w, rect.h});
+    Module* module = createModule(SDL_Point{rect.w, rect.h});
 
     int x, y;
     for (x = 0; x < rect.w; x++)
@@ -89,7 +89,7 @@ void pasteModule(Module* module, Level* level, SDL_Point point, bool processCond
     int i;
     for(i = 0; i < module->archerCount; i++)
     {
-        Vect2 archerPos = (Vect2){(float)module->archerPos[i].x, (float)module->archerPos[i].y};
+        Vec2 archerPos = Vec2{(float)module->archerPos[i].x, (float)module->archerPos[i].y};
         archerPos.x += point.x - module->ref.x; archerPos.y += point.y - module->ref.y;
 
         int archerID = getFreeEntity(level->entities);
@@ -97,7 +97,7 @@ void pasteModule(Module* module, Level* level, SDL_Point point, bool processCond
 
         archerPos.y -= level->entities->collData[archerID].sz.y;
 
-        setCollisionPos(level->entities, archerID, (Vect2){archerPos.x, archerPos.y});
+        setCollisionPos(level->entities, archerID, Vec2{archerPos.x, archerPos.y});
         level->entities->aiData[archerID].playerID = level->playerID;
     }
     for(i = 0; i < module->guardCount; i++)
@@ -110,7 +110,7 @@ void pasteModule(Module* module, Level* level, SDL_Point point, bool processCond
 
         guardPos.y -= (int)level->entities->collData[guardID].sz.y;
 
-        setCollisionPos(level->entities, guardID, (Vect2){(float)guardPos.x, (float)guardPos.y});
+        setCollisionPos(level->entities, guardID, Vec2{(float)guardPos.x, (float)guardPos.y});
         level->entities->aiData[guardID].playerID = level->playerID;
     }
 }

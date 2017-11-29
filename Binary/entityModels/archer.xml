@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<Model>
+	<Rect W="30" H="45"/>
+	<GfxData texID="2" texState="0"/>
+	<Status name="Mr.Archer" HP="80" knockback="5.0"/>
+	<DynamicData/>
+	<CollisionData w="1.875" h="2.8125" collType="melee"/>
+	<AIData aiType="archer" aiRange="30.0"/>
+</Model>
