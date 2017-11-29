@@ -8,9 +8,7 @@ PlayerInterfaceRenderer* createPlayerInterfaceRenderer(Graphics* gfx)
     SDL_Color color = {255, 255, 255, 255};
     TTF_Font* font = TTF_OpenFont("txt.ttf", 70);
     playerInterfaceRenderer->deathTextTexture = new Sprite("You died !", color, font);
-	playerInterfaceRenderer->deathTextTexture->setOrigin(0.5f, 0.5f);
-	playerInterfaceRenderer->deathTextTexture->setScreenOrigin(0.5f, 0.5f);
-	playerInterfaceRenderer->deathTextTexture->setPosition(0, 50);
+	playerInterfaceRenderer->deathTextTexture->setOrigin(0.5f, 0.5f).setScreenOrigin(0.5f, 0.5f).setPosition(0, 50);
     TTF_CloseFont(font);
 
     return playerInterfaceRenderer;

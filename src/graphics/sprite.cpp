@@ -47,13 +47,6 @@ Sprite::Sprite(unsigned int width, unsigned int height) : StagedImage(width, hei
 	setScreenSize(_realSize);
 }
 
-Sprite::~Sprite() {
-
-}
-
-void Sprite::setFullscreen() {
-	setPosition(0, 0);
-}
 
 /*Texture* createTextureFromText(OGLRenderer* renderer, const char* text, int outline, SDL_Color color, TTF_Font* font) {
 	Texture* res;

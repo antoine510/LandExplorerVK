@@ -93,7 +93,7 @@ void waterman_update(WaterManager* waterman, Terrain* terrain)
             }
         }
 
-        SDL_Rect chunckUpdateRect = {xb-1, yb-1, chunckGroupCount * CHUNCK_WIDTH+2, CHUNCK_HEIGHT+2};
+        SDL_Rect chunckUpdateRect = {int(xb-1), int(yb-1), chunckGroupCount * CHUNCK_WIDTH+2, CHUNCK_HEIGHT+2};
         updateRect(chunckRenderer, chunckUpdateRect);
 
         chunckGroupStart += chunckGroupCount;

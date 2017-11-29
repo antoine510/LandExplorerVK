@@ -124,7 +124,7 @@ void renderEntities(Graphics* gfx, Entities* entities) {
 			SDL_Rect t = entities->rect[i];
 			t.x -= gfx->viewOrigin.x;
 			t.y = gfx->viewOrigin.y - t.y - t.h;
-			blitEntity(gfx->texPack, &entities->gfxData[i], t);
+			blitEntity(gfx->texPack, gfx->cmdBuf, &entities->gfxData[i], t);
 		}
 	}
 	texPackFrameReset(gfx->texPack);

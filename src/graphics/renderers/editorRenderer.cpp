@@ -2,108 +2,82 @@
 #include "graphics/graphics.h"
 #include <cstring>
 
-void initEditorRenderer(EditorRenderer* editorRenderer, Graphics* gfx)
-{
-    editorRenderer->moduleTextTexture = NULL;
-    editorRenderer->font = TTF_OpenFont("txt.ttf", 32);
+void initEditorRenderer(EditorRenderer* editorRenderer, Graphics* gfx) {
+	editorRenderer->moduleTextTexture = NULL;
+	editorRenderer->font = TTF_OpenFont("txt.ttf", 32);
 
-    SDL_Color color = {255, 255, 0, 255};
+	SDL_Color color = {255, 255, 0, 255};
 	editorRenderer->modeNameTexture = new Sprite("Editor", color, editorRenderer->font);
 	editorRenderer->modeNameTexture->setPosition(10, 10);
 
-    SDL_Surface* t = TTF_RenderText_Blended(editorRenderer->font, "Nom du module : ", color);
-    editorRenderer->moduleTextTexture = createTextureFromSurface(gfx->renderer, t);
-	setTextureOriginRatio(editorRenderer->moduleTextTexture, 0.5f, 0.5f);
-    setTexturePos(editorRenderer->moduleTextTexture, 0, 0);
-    SDL_FreeSurface(t);
+	editorRenderer->moduleTextTexture = new Sprite("Nom du module: ", color, editorRenderer->font);
+	editorRenderer->moduleTextTexture->setOrigin(0.5f, 0.5f).setScreenOrigin(0.5f, 0.5f).setPosition(0, 0);
 
-    t = SDL_CreateRGBSurface(0, 1, 1, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+	editorRenderer->selectRefTex = new Sprite(1, 1);
+	editorRenderer->selectRefTex->fillColor(SDL_Color{255, 0, 0, 128}).setScale(BLOC_SIZE);
 
-    SDL_FillRect(t, NULL, SDL_MapRGBA(t->format, 255, 0, 0, 128));
-    editorRenderer->selectRefTex = createTextureFromSurface(gfx->renderer, t);
-    setTextureScale(editorRenderer->selectRefTex, BLOC_SIZE);
+	editorRenderer->selectArcherTex = new Sprite(1, 1);
+	editorRenderer->selectArcherTex->fillColor(SDL_Color{255, 255, 0, 128}).setScale(BLOC_SIZE);
 
-    SDL_FillRect(t, NULL, SDL_MapRGBA(t->format, 255, 255, 0, 128));
-    editorRenderer->selectArcherTex = createTextureFromSurface(gfx->renderer, t);
-    setTextureScale(editorRenderer->selectArcherTex, BLOC_SIZE);
+	editorRenderer->selectGuardTex = new Sprite(1, 1);
+	editorRenderer->selectGuardTex->fillColor(SDL_Color{0, 255, 0, 128}).setScale(BLOC_SIZE);
 
-    SDL_FillRect(t, NULL, SDL_MapRGBA(t->format, 0, 255, 0, 128));
-    editorRenderer->selectGuardTex = createTextureFromSurface(gfx->renderer, t);
-    setTextureScale(editorRenderer->selectGuardTex, BLOC_SIZE);
+	editorRenderer->selectModuleTex = new Sprite(1, 1);
+	editorRenderer->selectModuleTex->fillColor(SDL_Color{0, 0, 255, 64});
 
-    SDL_FreeSurface(t);
-
-    t = SDL_CreateRGBSurface(0, 1, 1, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-    SDL_FillRect(t, NULL, SDL_MapRGBA(t->format, 0, 0, 255, 64));
-    editorRenderer->selectModuleTex = new Sprite(t);
-    SDL_FreeSurface(t);
-
-    t = SDL_CreateRGBSurface(0, 1, 1, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-    SDL_FillRect(t, NULL, SDL_MapRGBA(t->format, 0, 0, 0, 64));
-    editorRenderer->bgOverlay = new Sprite(t);
-    editorRenderer->bgOverlay->setFullscreen();
-    SDL_FreeSurface(t);
+	editorRenderer->bgOverlay = new Sprite(1, 1);
+	editorRenderer->bgOverlay->fillColor(SDL_Color{0, 0, 0, 64}).setFullscreen();
 }
 
-void renderEditor(Graphics* gfx, Editor* editor)
-{
-    if(editor->textChanged)
-    {
-        char instructions[200] = "Nom du module : ";
-        strcat(instructions, editor->moduleName);
-        SDL_Color color = {255, 255, 255, 255};
+void renderEditor(Graphics* gfx, Editor* editor) {
+	if(editor->textChanged) {
+		std::string instructions = "Nom du module : ";
+		instructions += editor->moduleName;
+		SDL_Color color = {255, 255, 255, 255};
 
-        SDL_Surface* t = TTF_RenderText_Blended(gfx->editorRenderer.font, instructions, color);
-        modifyTextureFromSurface(gfx->editorRenderer.moduleTextTexture, t);
-		setTextureOriginRatio(gfx->editorRenderer.moduleTextTexture, 0.5f, 0.5f);
-        setTexturePos(gfx->editorRenderer.moduleTextTexture, 0, 0);
-        SDL_FreeSurface(t);
+		delete gfx->editorRenderer.moduleTextTexture;
+		gfx->editorRenderer.moduleTextTexture = new Sprite(instructions, color, gfx->editorRenderer.font);
+		gfx->editorRenderer.moduleTextTexture->setOrigin(0.5f, 0.5f).setScreenOrigin(0.5f, 0.5f).setPosition(0, 0);
 
-        editor->textChanged = false;
-    }
+		editor->textChanged = false;
+	}
 
-    switch (editor->mode)
-    {
-    case VIEWING: break;
-    case SELECTING_MODULE:
-        setTextureSize(gfx->editorRenderer.selectModuleTex, editor->selection.w * BLOC_SIZE, editor->selection.h * BLOC_SIZE);
-        setTexturePos(gfx->editorRenderer.selectModuleTex,
-                      (editor->selection.x + (editor->selection.w>0 ? 0 : 1)) * BLOC_SIZE - gfx->viewOrigin.x,
-                      (editor->selection.y + (editor->selection.h>0 ? 0 : 1)) * BLOC_SIZE - gfx->viewOrigin.y);
-        drawTexture(gfx->editorRenderer.selectModuleTex);
-        break;
-    case SELECTING_REFERENCE:
-        setTexturePos(gfx->editorRenderer.selectRefTex,
-                      editor->module->ref.x * BLOC_SIZE - gfx->viewOrigin.x,
-                      editor->module->ref.y * BLOC_SIZE - gfx->viewOrigin.y);
-        drawTexture(gfx->editorRenderer.selectRefTex);
-        break;
-    case SELECTING_ARCHERS:
-        setTexturePos(gfx->editorRenderer.selectArcherTex,
-                      editor->module->archerPos[editor->module->archerCount].x * BLOC_SIZE - gfx->viewOrigin.x,
-                      editor->module->archerPos[editor->module->archerCount].y * BLOC_SIZE - gfx->viewOrigin.y);
-        drawTexture(gfx->editorRenderer.selectArcherTex);
-        break;
-    case SELECTING_GUARDS:
-        setTexturePos(gfx->editorRenderer.selectGuardTex,
-                      editor->module->guardPos[editor->module->guardCount].x * BLOC_SIZE - gfx->viewOrigin.x,
-                      editor->module->guardPos[editor->module->guardCount].y * BLOC_SIZE - gfx->viewOrigin.y);
-        drawTexture(gfx->editorRenderer.selectGuardTex);
-        break;
-    case ENTERING_NAME:
-        drawTexture(gfx->editorRenderer.bgOverlay);
-        drawTexture(gfx->editorRenderer.moduleTextTexture);
-        break;
-    }
+	switch(editor->mode) {
+	case VIEWING: break;
+	case SELECTING_MODULE:
+		gfx->editorRenderer.selectModuleTex->setScale(float(editor->selection.w * BLOC_SIZE), float(editor->selection.h * BLOC_SIZE))
+			.setPosition((editor->selection.x + (editor->selection.w > 0 ? 0 : 1)) * BLOC_SIZE - gfx->viewOrigin.x,
+			(editor->selection.y + (editor->selection.h > 0 ? 0 : 1)) * BLOC_SIZE - gfx->viewOrigin.y);
+		gfx->editorRenderer.selectModuleTex->draw(gfx->cmdBuf);
+		break;
+	case SELECTING_REFERENCE:
+		gfx->editorRenderer.selectRefTex->setPosition(editor->module->ref.x * BLOC_SIZE - gfx->viewOrigin.x,
+													  editor->module->ref.y * BLOC_SIZE - gfx->viewOrigin.y);
+		gfx->editorRenderer.selectRefTex->draw(gfx->cmdBuf);
+		break;
+	case SELECTING_ARCHERS:
+		gfx->editorRenderer.selectArcherTex->setPosition(editor->module->archerPos[editor->module->archerCount].x * BLOC_SIZE - gfx->viewOrigin.x,
+														 editor->module->archerPos[editor->module->archerCount].y * BLOC_SIZE - gfx->viewOrigin.y);
+		gfx->editorRenderer.selectArcherTex->draw(gfx->cmdBuf);
+		break;
+	case SELECTING_GUARDS:
+		gfx->editorRenderer.selectGuardTex->setPosition(editor->module->guardPos[editor->module->guardCount].x * BLOC_SIZE - gfx->viewOrigin.x,
+														editor->module->guardPos[editor->module->guardCount].y * BLOC_SIZE - gfx->viewOrigin.y);
+		gfx->editorRenderer.selectGuardTex->draw(gfx->cmdBuf);
+		break;
+	case ENTERING_NAME:
+		gfx->editorRenderer.bgOverlay->draw(gfx->cmdBuf);
+		gfx->editorRenderer.moduleTextTexture->draw(gfx->cmdBuf);
+		break;
+	}
 
-    gfx->editorRenderer.modeNameTexture->draw(gfx->cmdBuf);
+	gfx->editorRenderer.modeNameTexture->draw(gfx->cmdBuf);
 }
 
-void destroyEditorRenderer(EditorRenderer* editorRenderer)
-{
-    TTF_CloseFont(editorRenderer->font);
+void destroyEditorRenderer(EditorRenderer* editorRenderer) {
+	TTF_CloseFont(editorRenderer->font);
 	delete editorRenderer->moduleTextTexture;
-    delete editorRenderer->modeNameTexture;
+	delete editorRenderer->modeNameTexture;
 	delete editorRenderer->selectRefTex;
 	delete editorRenderer->selectModuleTex;
 	delete editorRenderer->bgOverlay;

@@ -69,23 +69,24 @@ ViewedImage::~ViewedImage() {
 StagedImage::SamplerHelper::SamplerHelper(vk::Filter maxFilter) :
 	vk::Sampler(VulkanState::device.createSampler(vk::SamplerCreateInfo().setMinFilter(vk::Filter::eLinear).setMagFilter(maxFilter))) {}
 
-StagedImage::StagedImage(SDL_Surface* surface) : StagedImage(surface->w, surface->h, surface->pitch) {
+StagedImage::StagedImage(SDL_Surface* surface, bool isMutable) : StagedImage(surface->w, surface->h, surface->pitch) {
 	SDL_LockSurface(surface);
 	_staging->update(surface->pixels);
 	SDL_UnlockSurface(surface);
 	SDL_FreeSurface(surface);
 	stageImage();
+	if(!isMutable) lock();
 }
 
-StagedImage::StagedImage(const std::string& path) : StagedImage(loadSurface(path)) {}
+StagedImage::StagedImage(const std::string& path, bool isMutable) : StagedImage(loadSurface(path), isMutable) {}
 
 StagedImage::StagedImage(unsigned int width, unsigned int height, unsigned int pitch) :
 	ViewedImage(vk::ImageCreateInfo(vk::ImageCreateFlags(), vk::ImageType::e2D, vk::Format::eR8G8B8A8Unorm, vk::Extent3D(width, height, 1),
 									1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
 									vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled)),
-	_staging(std::make_unique<AllocatedBuffer>(pitch * height, vk::BufferUsageFlagBits::eTransferSrc,
-											   vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)),
-	_w(width), _h(height), _wPitch(pitch / 4) {}
+	_w(width), _h(height), _wPitch(pitch == 0 ? _w : pitch / 4),
+	_staging(std::make_unique<AllocatedBuffer>(4 * _wPitch * _h, vk::BufferUsageFlagBits::eTransferSrc,
+											   vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)) {}
 
 void StagedImage::stageImage() {
 	OneUseCommandBuffer oucb;
@@ -96,9 +97,9 @@ void StagedImage::stageImage() {
 	switchLayout(vk::ImageLayout::eShaderReadOnlyOptimal, oucb);
 }
 
-vk::Sampler& StagedImage::getSampler(bool linear) {
+vk::Sampler& StagedImage::getSampler(bool isLinear) {
 	static SamplerHelper linearSampler = SamplerHelper(vk::Filter::eLinear), nearestSampler = SamplerHelper(vk::Filter::eNearest);
-	return linear ? linearSampler : nearestSampler;
+	return isLinear ? linearSampler : nearestSampler;
 }
 
 /*vk::Format StagedImage::getSurfaceFormat(SDL_Surface* srf) {

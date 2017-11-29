@@ -24,10 +24,7 @@ void backgroundRendererLoadTextures(BackgroundRenderer* bgRenderer, SDL_Color* s
 			bgRenderer->background[index] = new Sprite(filename);
 			auto& sprite = *bgRenderer->background[index];
 			if(index == BG_BIOMES + BIOME_PLAINS || index == BG_BIOMES + BIOME_MOUNTAINS || index == BG_BIOMES + BIOME_OCEAN) {
-				sprite.setColorMod(*skyColor);
-				sprite.setClipSize(TERRAIN_WIDTH * BLOC_SIZE / 2, sprite.height());
-				sprite.setScale(2.5f);
-				sprite.setSampling(true);
+				sprite.setColorMod(*skyColor).setClipSize(TERRAIN_WIDTH * BLOC_SIZE / 2, sprite.height()).setScale(2.5f).setSampling(true);
 			} else {
 				sprite.setFullscreen();
 			}

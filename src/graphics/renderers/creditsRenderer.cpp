@@ -16,16 +16,13 @@ void initCreditsRenderer(Credits* credits, Graphics* gfx)
     {
         TTF_Font* font = TTF_OpenFont("txt.ttf", credits->lineSize[i]);
 		gfx->creditsRenderer->lineTextures[i] = new Sprite(credits->lines[i], textColor, font);
-		gfx->creditsRenderer->lineTextures[i]->setOrigin(0.5f, 0.0f);
-		gfx->creditsRenderer->lineTextures[i]->setScreenOrigin(0.5f, 0.0f);
+		gfx->creditsRenderer->lineTextures[i]->setOrigin(0.5f, 0).setScreenOrigin(0.5f, 0);
         TTF_CloseFont(font);
     }
 
     TTF_Font* font = TTF_OpenFont("txt.ttf", credits->endLineSize);
     gfx->creditsRenderer->endLineTexture = new Sprite(credits->endLine, textColor, font);
-	gfx->creditsRenderer->endLineTexture->setOrigin(0.5f, 0.5f);
-	gfx->creditsRenderer->endLineTexture->setScreenOrigin(0.5f, 0.5f);
-	gfx->creditsRenderer->endLineTexture->setPosition(0, 0);
+	gfx->creditsRenderer->endLineTexture->setOrigin(0.5f, 0.5f).setScreenOrigin(0.5f, 0.5f).setPosition(0, 0);
     TTF_CloseFont(font);
 }
 

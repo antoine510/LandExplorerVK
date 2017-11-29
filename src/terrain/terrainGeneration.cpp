@@ -340,7 +340,7 @@ void breakBloc(Terrain* terrain, WaterManager* waterManager, Uint32 x, Uint32 y)
 
     processSunLightAroundBloc(terrain, x, y);
 
-    SDL_Rect t = {x - MAX_BLOC_LIGHT, y - MAX_BLOC_LIGHT, 2*MAX_BLOC_LIGHT+1, 2*MAX_BLOC_LIGHT+1};
+    SDL_Rect t = {int(x - MAX_BLOC_LIGHT), int(y - MAX_BLOC_LIGHT), 2*MAX_BLOC_LIGHT+1, 2*MAX_BLOC_LIGHT+1};
     clampWorld(terrain->width, terrain->height, &t, TERRAIN_BORDER);
 
     processChunckConditions(terrain, getChunckRect(&t));
@@ -353,7 +353,7 @@ void placeBloc(Terrain* terrain, Uint32 x, Uint32 y, Uint32 type)
     if(type < BACKWALL_TYPES_OFFSET) {if(getBlock(terrain, x, y).type != 0) return;}
     else {if(getBackwall(terrain, x, y).type != 0) return;}
 
-    if(type == 6) addLightSource(terrain, x, y, (SDL_Color){255, 255, 255, 0}, MAX_BLOC_LIGHT, 8, 8);
+    if(type == 6) addLightSource(terrain, x, y, SDL_Color{255, 255, 255, 0}, MAX_BLOC_LIGHT, 8, 8);
 
     if(type < BACKWALL_TYPES_OFFSET)
         getBlockPtr(terrain, x, y)->type = type;
@@ -362,7 +362,7 @@ void placeBloc(Terrain* terrain, Uint32 x, Uint32 y, Uint32 type)
 
     processSunLightAroundBloc(terrain, x, y);
 
-    SDL_Rect t = {x - MAX_BLOC_LIGHT, y - MAX_BLOC_LIGHT, 2*MAX_BLOC_LIGHT+1, 2*MAX_BLOC_LIGHT+1};
+    SDL_Rect t = {int(x - MAX_BLOC_LIGHT), int(y - MAX_BLOC_LIGHT), 2*MAX_BLOC_LIGHT+1, 2*MAX_BLOC_LIGHT+1};
     clampWorld(terrain->width, terrain->height, &t, TERRAIN_BORDER);
 
     processChunckConditions(terrain, getChunckRect(&t));

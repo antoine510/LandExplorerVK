@@ -38,8 +38,8 @@ protected:
 
 class StagedImage : public ViewedImage {
 public:
-	StagedImage(SDL_Surface* surface);
-	StagedImage(const std::string& path);
+	StagedImage(SDL_Surface* surface, bool isMutable = false);
+	StagedImage(const std::string& path, bool isMutable = false);
 	StagedImage(unsigned int width, unsigned int height, unsigned int pitch = 0);
 	~StagedImage() { _staging.release(); }
 
@@ -49,7 +49,7 @@ public:
 	vk::DescriptorImageInfo getImageInfo() { return vk::DescriptorImageInfo(_sampler, _view, _layout); }
 
 	void lock() { _staging.release(); }
-	void setSampling(bool linear) { _sampler = getSampler(linear); }
+	void setSampling(bool isLinear) { _sampler = getSampler(isLinear); }
 
 	uint32_t width() const { return _w; }
 	uint32_t height() const { return _h; }
@@ -59,10 +59,10 @@ protected:
 		SamplerHelper(vk::Filter maxFilter);
 	};
 	static SDL_Surface* loadSurface(const std::string& path);
-	static vk::Sampler& getSampler(bool linear = false);
+	static vk::Sampler& getSampler(bool isLinear = false);
 
-	std::unique_ptr<AllocatedBuffer> _staging;
 	uint32_t _w, _h, _wPitch;
+	std::unique_ptr<AllocatedBuffer> _staging;
 
 	vk::Sampler& _sampler = getSampler();
 };

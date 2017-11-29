@@ -13,39 +13,50 @@ class Swapchain;
 class Sprite : public StagedImage {
 public:
 	Sprite(const std::string& path);
+	Sprite(SDL_Surface* srf) : StagedImage(srf), _realSize(_w, _h) { setScreenSize(_realSize); }
 	Sprite(const std::string& text, const SDL_Color& color, TTF_Font* font);
 	Sprite(unsigned int width, unsigned int height);
-	~Sprite();
+	~Sprite() = default;
 
-	void setScale(float scale) {
-		setScreenSize(_realSize * scale);
-	}
-	void setFullscreen();
+	Sprite& setScale(float scale) { setScreenSize(_realSize * scale); return *this; }
+	Sprite& setScale(float xScale, float yScale) { setScreenSize(_realSize * Vec2(xScale, yScale)); return *this; }
+	Sprite& setFullscreen() { setPosition(0, 0); return *this; }
 
-	void setPosition(int posX, int posY) {
+	Sprite& setPosition(int posX, int posY) {
 		_pushConsts.pos = Vec2(-1, -1) + 2.f * _screenOrigin + (Vec2(posX, posY) - _realSize * _origin) / Vec2(myDisplayMode.w >> 1, myDisplayMode.h >> 1);
+		return *this;
 	}
 
-	void setOrigin(float rX, float rY) { _origin = Vec2(rX, rY); }
-	void setScreenOrigin(float rX, float rY) { _screenOrigin = Vec2(rX, rY); }
+	Sprite& setOrigin(float rX, float rY) { _origin = Vec2(rX, rY); return *this; }
+	Sprite& setScreenOrigin(float rX, float rY) { _screenOrigin = Vec2(rX, rY); return *this; }
 
-	void setClipSize(unsigned int wc, unsigned int hc) {
+	Sprite& setClipSize(unsigned int wc, unsigned int hc) {
 		_realSize = Vec2(wc, hc);
 		_pushConsts.texCoords.z = float(wc) / _w;
 		_pushConsts.texCoords.w = float(hc) / _h;
 		setScreenSize(_realSize);
+		return *this;
 	}
-	void setClip(unsigned int ox, unsigned int oy) {
+	Sprite& setClip(unsigned int ox, unsigned int oy) {
 		_pushConsts.texCoords.x = ox * _pushConsts.texCoords.z;
 		_pushConsts.texCoords.y = oy * _pushConsts.texCoords.w;
+		return *this;
 	}
 
-	void setColorMod(const SDL_Color& colorMod) {
+	Sprite& setColorMod(const SDL_Color& colorMod) {
 		_pushConsts.colorAlphaMod.r = colorMod.r / 255.0f;
 		_pushConsts.colorAlphaMod.g = colorMod.g / 255.0f;
 		_pushConsts.colorAlphaMod.b = colorMod.b / 255.0f;
+		return *this;
 	}
-	void setAlphaMod(float alphaMod) { _pushConsts.colorAlphaMod.a = alphaMod; }
+	Sprite& setAlphaMod(float alphaMod) { _pushConsts.colorAlphaMod.a = alphaMod; return *this; }
+
+	Sprite& fillColor(SDL_Color color) {
+		std::vector<uint32_t> BGRAColors(_wPitch * _h, uint32_t(color.b) + (uint32_t(color.g) << 8) + (uint32_t(color.r) << 16) + (uint32_t(color.a) << 24));
+		_staging->update(BGRAColors.data());
+		stageImage();
+		return *this;
+	}
 
 	void draw(vk::CommandBuffer& cmdBuf) {
 		_descSet->writeBinding(DescriptorSetBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, getImageInfo()));
