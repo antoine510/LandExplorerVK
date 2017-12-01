@@ -1,6 +1,6 @@
 #include "water.h"
 #include "blockTypes.h"
-#include "../graphics/chunkRenderer.h"
+#include "graphics/renderers/terrainRenderer.h"
 
 #define MIN(a,b) (a < b ? a : b)
 #define MAX(a,b) (a > b ? a : b)
@@ -94,7 +94,7 @@ void waterman_update(WaterManager* waterman, Terrain* terrain)
         }
 
         SDL_Rect chunckUpdateRect = {int(xb-1), int(yb-1), chunckGroupCount * CHUNCK_WIDTH+2, CHUNCK_HEIGHT+2};
-        updateRect(chunckRenderer, chunckUpdateRect);
+		terrainRenderer->updateRect(chunckUpdateRect);
 
         chunckGroupStart += chunckGroupCount;
         t++;

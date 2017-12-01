@@ -8,6 +8,7 @@ static void initRenderers(Graphics* gfx);
 static void destroyRenderers(Graphics* gfx);
 
 SDL_DisplayMode myDisplayMode;
+TerrainRenderer* terrainRenderer;
 
 Graphics* initGraphics() {
 	Graphics* gfx = (Graphics*)malloc(sizeof(Graphics));
@@ -25,6 +26,8 @@ Graphics* initGraphics() {
 
 	initRenderers(gfx);
 
+	gfx->cmdBuf = VulkanState::device.allocateCommandBuffers(vk::CommandBufferAllocateInfo(VulkanState::cmdPool, vk::CommandBufferLevel::ePrimary, 1u))[0];
+
 	gfx->viewOrigin.x = 0;
 	gfx->viewOrigin.y = 0;
 	gfx->playerRect = NULL;
@@ -39,7 +42,7 @@ void initRenderers(Graphics* gfx) {
 	initMenuRenderer(&gfx->menuRenderer);
 	initMapRenderer(&gfx->mapRenderer, gfx);
 	gfx->texPack = initTexturePack(gfx);
-	chunckRenderer = initChunckRenderer(gfx->texPack, &gfx->viewOrigin);
+	terrainRenderer = new TerrainRenderer(*gfx->swapchain, *gfx->texPack->blocAtlas, *gfx->texPack->backwallAtlas, &gfx->viewOrigin);
 	initEditorRenderer(&gfx->editorRenderer, gfx);
 }
 
@@ -68,22 +71,21 @@ void setDisplayFullscreen(Graphics* gfx, bool fullscreen) {
 	SDL_SetWindowFullscreen(gfx->window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 }
 
-/*void renderLevel(Graphics* gfx, Level* level) {
+void renderLevel(Graphics* gfx, Level* level) {
 	gfx->texPack->skyColor = level->skyColor;
 
 	Vec2 playerPos = level->entities->collData[level->playerID].pos;
 	int biomeID = getChunckPtr(level->terrain, (Uint32)(playerPos.x / CHUNCK_WIDTH), (Uint32)(playerPos.y / CHUNCK_HEIGHT))->biome;
-	renderBackground(gfx->bgRenderer, gfx->cmdBuf, gfx, BG_BIOMES + biomeID);
+	renderBackground(gfx->bgRenderer, gfx, BG_BIOMES + biomeID);
 
 	updateCamera(gfx);
 
-	updateChunckRenderer(chunckRenderer);
-	renderBackwallScreen(chunckRenderer);
+	terrainRenderer->renderTerrain(gfx->cmdBuf, true);
 	renderEntities(gfx, level->entities);
-	renderBlocScreen(chunckRenderer);
+	terrainRenderer->renderTerrain(gfx->cmdBuf, false);
 
 	renderPlayerInterface(gfx, level->playerControl);
-}*/
+}
 
 void initCamera(Graphics* gfx, Entities* entities) {
 	int i;
@@ -132,7 +134,7 @@ void renderEntities(Graphics* gfx, Entities* entities) {
 
 void destroyRenderers(Graphics* gfx) {
 	destroyEditorRenderer(&gfx->editorRenderer);
-	destroyChunckRenderer(chunckRenderer);
+	delete terrainRenderer;
 	destroyTexturePack(gfx->texPack);
 	destroyMapRenderer(&gfx->mapRenderer);
 	destroyMenuRenderer(&gfx->menuRenderer);
@@ -144,6 +146,8 @@ void destroyRenderers(Graphics* gfx) {
 void destroyGraphics(Graphics* gfx) {
 	destroyRenderers(gfx);
 
+	Sprite::teardownSpriteRendering();
+	delete gfx->swapchain;
 	VulkanState::teardown();
 
 	SDL_DestroyWindow(gfx->window);

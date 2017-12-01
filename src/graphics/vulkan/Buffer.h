@@ -34,7 +34,9 @@ public:
 												   vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)) {}
 
 	AllocatedBuffer& getStagingBuffer() { SDL_assert(_staging); return *_staging; }
-	void stageBuffer();
+
+	void stageBuffer(vk::DeviceSize offset, vk::DeviceSize size);
+	void stageBuffer() { stageBuffer(0u, _size); }
 
 	void lock() { _staging.release(); }
 

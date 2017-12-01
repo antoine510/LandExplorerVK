@@ -29,7 +29,7 @@ public:
 	ViewedImage(const vk::Image& source, vk::Format format, vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor);
 	~ViewedImage();
 
-	vk::ImageView& getView() { return _view; }
+	vk::ImageView getView() { return _view; }
 
 protected:
 	vk::ImageView _view;
@@ -43,10 +43,10 @@ public:
 	StagedImage(unsigned int width, unsigned int height, unsigned int pitch = 0);
 	~StagedImage() { _staging.release(); }
 
-	AllocatedBuffer& getStagingBuffer() { SDL_assert(_staging); return *_staging; }
+	AllocatedBuffer& getStagingBuffer() const { SDL_assert(_staging); return *_staging; }
 	void stageImage();
 
-	vk::DescriptorImageInfo getImageInfo() { return vk::DescriptorImageInfo(_sampler, _view, _layout); }
+	vk::DescriptorImageInfo getImageInfo() const { return vk::DescriptorImageInfo(_sampler, _view, _layout); }
 
 	void lock() { _staging.release(); }
 	void setSampling(bool isLinear) { _sampler = getSampler(isLinear); }

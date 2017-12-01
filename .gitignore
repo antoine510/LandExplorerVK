@@ -22,9 +22,11 @@ PerfLogs/
 # Compiled Object files
 *.o
 *.obj
+*.exe
 
 # Debugging files
-*.pbd
+*.pdb
+*.ilk
 *.exp
 
 #MacOS cache

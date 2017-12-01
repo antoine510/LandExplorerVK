@@ -36,6 +36,7 @@ BlocType readBlockType(xmlNodePtr blocNode)
     blocType.getBlocTypeCustomValue = defaultCustomFunction;
 
     blocType.opacity = asIntl(blocNode, "opacity");
+	blocType.atlasOffset = asIntl(blocNode, "atlasOffset");
 
     xmlNodePtr blocElement = blocNode->children;
 	while(blocElement->type == XML_TEXT_NODE) blocElement = blocElement->next;

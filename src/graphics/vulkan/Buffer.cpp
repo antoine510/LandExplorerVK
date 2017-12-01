@@ -42,8 +42,8 @@ void AllocatedBuffer::update(const void* data, vk::DeviceSize offset, vk::Device
 }
 
 
-void StagedBuffer::stageBuffer() {
+void StagedBuffer::stageBuffer(vk::DeviceSize offset, vk::DeviceSize size) {
 	OneUseCommandBuffer oucb;
-	oucb.copyBuffer(*_staging, _buffer, vk::BufferCopy(0, 0, _size));
+	oucb.copyBuffer(*_staging, _buffer, vk::BufferCopy(offset, offset, size));
 }
 

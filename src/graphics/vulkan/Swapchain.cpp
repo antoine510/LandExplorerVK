@@ -33,7 +33,7 @@ Swapchain::Swapchain(vk::Extent2D extent, vk::PresentModeKHR presentMode) :
 	_swapchain = VulkanState::device.createSwapchainKHR(swapchainCI);
 	auto swapchainImages = VulkanState::device.getSwapchainImagesKHR(_swapchain);
 	for(const auto& swapchainImage : swapchainImages) {
-		_colorImages.emplace_back(swapchainImage, _colorFormat);
+		_colorImages.emplace_back(swapchainImage, _colorFormat, vk::ImageAspectFlagBits::eColor);
 	}
 
 	std::vector<vk::ImageView> attachementViews(2);

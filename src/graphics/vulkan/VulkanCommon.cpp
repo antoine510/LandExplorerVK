@@ -5,6 +5,8 @@
 
 #define VKassert(vkRes) SDL_assert(vkRes == VK_SUCCESS)
 
+VkDebugReportCallbackEXT VulkanState::debugCallback;
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCB(
 	VkDebugReportFlagsEXT flags,
 	VkDebugReportObjectTypeEXT objType,
@@ -50,7 +52,6 @@ void VulkanState::setup(SDL_Window* window) {
 #ifdef _DEBUG
 	vk::DebugReportCallbackCreateInfoEXT debugInfo(vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::eWarning, debugCB);
 	auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)inst.getProcAddr("vkCreateDebugReportCallbackEXT");
-	auto vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)inst.getProcAddr("vkDestroyDebugReportCallbackEXT");
 	VKassert(vkCreateDebugReportCallbackEXT(inst, &(VkDebugReportCallbackCreateInfoEXT)debugInfo, nullptr, &debugCallback));
 #endif // DEBUG
 
@@ -89,7 +90,7 @@ void VulkanState::setup(SDL_Window* window) {
 	device = gpu.createDevice(deviceCreateInfo);
 	deviceQueue = device.getQueue(selectedQueueFamily, 0);
 
-	vk::CommandPoolCreateInfo cmdPoolCI(vk::CommandPoolCreateFlagBits::eTransient, selectedQueueFamily);
+	vk::CommandPoolCreateInfo cmdPoolCI(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, selectedQueueFamily);
 	cmdPool = device.createCommandPool(cmdPoolCI);
 	cmdPoolCI.setFlags(vk::CommandPoolCreateFlagBits::eTransient);
 	cmdPoolTransient = device.createCommandPool(cmdPoolCI);
@@ -101,6 +102,7 @@ void VulkanState::teardown() {
 	device.destroy();
 
 #ifdef _DEBUG
+	auto vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)inst.getProcAddr("vkDestroyDebugReportCallbackEXT");
 	vkDestroyDebugReportCallbackEXT(inst, debugCallback, nullptr);
 #endif // DEBUG
 

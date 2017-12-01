@@ -40,10 +40,12 @@ void mainLoop(LandExplorer* landExplorer)
     {
         initTime = SDL_GetTicks();
 		startFrame(landExplorer->gfx);
+		Sprite::startSpriteRendering(landExplorer->gfx->cmdBuf);
 
         updateTimers(timerStack);
         processKeystates(&landExplorer->keyStates);
 
+		//TODO: enable sprite endering
         switch (landExplorer->mode)
         {
         case MURESULT_LEVEL:
@@ -69,7 +71,7 @@ void mainLoop(LandExplorer* landExplorer)
 			presentFrame(landExplorer->gfx);
 			startFrame(landExplorer->gfx);
             landExplorer->level = initLevel(&landExplorer->gfx->viewOrigin);
-            setTerrain(chunckRenderer, landExplorer->level->terrain);
+			terrainRenderer->setTerrain(landExplorer->level->terrain);
             initCamera(landExplorer->gfx, landExplorer->level->entities);
             setBackgroundRendererTime(landExplorer->gfx->bgRenderer, &landExplorer->level->timeMinutes);
             initCreditsRenderer(landExplorer->credits, landExplorer->gfx);

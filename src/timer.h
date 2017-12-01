@@ -39,5 +39,5 @@ void updateTimers(Timer* timers);
 
 void destroyTimerStack(Timer* timers);
 
-Timer* timerStack;
+extern Timer* timerStack;
 

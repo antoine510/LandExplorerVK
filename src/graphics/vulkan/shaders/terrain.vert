@@ -23,7 +23,7 @@ void main() {
 	uint yCoord = (vdata >> 8) & 0xff;
 	const bool right = (vdata & 0x10000) != 0;
 	const bool down = (vdata & 0x20000) != 0;
-	const uint bIndex = xCoord + (yCoord << 6);
+	const uint bIndex = xCoord + (yCoord << 4);
 	const uint blocType = terrainBuffer.blocs[bIndex];
 	const uint blocTile = (blocType >> (vertexPush.backwall ? 8 : 0)) & 0xff;
 	uint texU = blocTile & 0xf, texV = blocTile >> 4;

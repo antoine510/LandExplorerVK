@@ -12,10 +12,12 @@
 struct BlocType {
     Uint8 opacity;
     Uint8 transparency;
+	Uint8 atlasOffset;
     bool solid;
     bool liquid;
     bool transparent;
 
+	Uint8 getAtlasOffset(Terrain* terrain, Bloc* bloc) { return atlasOffset + getBlocTypeCustomValue(terrain, bloc); }
     Uint8 (*getBlocTypeCustomValue)(Terrain* terrain, Bloc* bloc);
 };
 

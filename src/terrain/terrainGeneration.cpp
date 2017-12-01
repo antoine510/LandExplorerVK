@@ -1,7 +1,7 @@
 #include "terrainGeneration.h"
 #include "blockTypes.h"
 #include <cstring>
-#include "graphics/chunkRenderer.h"
+#include "graphics/renderers/terrainRenderer.h"
 #include "caves.h"
 #include "heightProfile.h"
 #include "buildingGen.h"
@@ -345,7 +345,7 @@ void breakBloc(Terrain* terrain, WaterManager* waterManager, Uint32 x, Uint32 y)
 
     processChunckConditions(terrain, getChunckRect(&t));
 
-    updateRect(chunckRenderer, t);  //Graphical update
+	terrainRenderer->updateRect(t);  //Graphical update
 }
 
 void placeBloc(Terrain* terrain, Uint32 x, Uint32 y, Uint32 type)
@@ -367,7 +367,7 @@ void placeBloc(Terrain* terrain, Uint32 x, Uint32 y, Uint32 type)
 
     processChunckConditions(terrain, getChunckRect(&t));
 
-    updateRect(chunckRenderer, t);
+	terrainRenderer->updateRect(t);
 
     switch(Random<int>::range(0, 2)) {
         case 0: soundstack_addSound(SOUND_DIG); break;

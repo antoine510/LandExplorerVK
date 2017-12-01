@@ -2,7 +2,6 @@
 
 #include "../common.h"
 #include "terrain.h"
-#include "../graphics/chunkRenderer.h"
 
 #define MAX_MODULE_FILENAME_LENGTH 128
 #define MAX_UNITS_PER_MODULE 32

@@ -2,7 +2,6 @@
 
 #include "../common.h"
 #include "texturePack.h"
-#include "chunkRenderer.h"
 #include "../level.h"
 #include "../entities.h"
 #include "renderers/editorRenderer.h"
@@ -11,6 +10,7 @@
 #include "renderers/backgroundRenderer.h"
 #include "renderers/creditsRenderer.h"
 #include "renderers/playerInterfaceRenderer.h"
+#include "renderers/terrainRenderer.h"
 #include "displayInfo.h"
 
 #include "vulkan/Swapchain.h"
@@ -45,8 +45,8 @@ void setDisplaySize(Graphics* gfx, int w, int h);
 void toggleDisplayFullscreen(Graphics* gfx);
 void setDisplayFullscreen(Graphics* gfx, bool fullscreen);
 
-void startFrame(Graphics* gfx) { gfx->swapchain->beginCmdBuffer(gfx->cmdBuf); }
-void presentFrame(Graphics* gfx) { gfx->swapchain->presentCmdBuffer(gfx->cmdBuf); }
+inline void startFrame(Graphics* gfx) { gfx->swapchain->beginCmdBuffer(gfx->cmdBuf); }
+inline void presentFrame(Graphics* gfx) { gfx->swapchain->presentCmdBuffer(gfx->cmdBuf); }
 
 void renderLevel(Graphics* gfx, Level* level);
 

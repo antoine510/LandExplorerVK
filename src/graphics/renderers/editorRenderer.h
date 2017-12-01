@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "editor.h"
+#include "graphics/sprite.h"
 #include <SDL_ttf.h>
 
 typedef struct EditorRenderer {

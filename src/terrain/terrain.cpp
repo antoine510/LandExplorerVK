@@ -1,15 +1,10 @@
 #include "terrain.h"
 #include "blockTypes.h"
 #include "terrainGeneration.h"
-#include "graphics/chunkRenderer.h"
 #include "utility/mathUtility.h"
 
-/**GLOBAL**/
-ChunckRenderer* chunckRenderer;
 
 static Uint16 terrainWidth, terrainHeight, terrainWidthChunck, terrainHeightChunck;
-
-static Uint32 getBlockIndex(Uint32 x, Uint32 y);
 
 static Uint8 chunckZeroTest[CHUNCK_WIDTH * CHUNCK_HEIGHT];
 

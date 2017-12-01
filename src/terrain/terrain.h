@@ -32,28 +32,28 @@
 #define BACKWALL_ROCK 2
 
 typedef struct Chunck {
-    LightSource* lights;
-    Uint8 lightCount;
-    Uint8* customValues;
+	LightSource* lights;
+	Uint8 lightCount;
+	Uint8* customValues;
 
-    Uint8 biome;
-    bool black : 1;
-    bool empty : 1;
+	Uint8 biome;
+	bool black : 1;
+	bool empty : 1;
 } Chunck;
 
 typedef struct ChunckCoords {
-    Uint16 x, y;
+	Uint16 x, y;
 } ChunckCoords;
 
 struct Terrain {
-    Bloc* blocks;
-    Bloc* backwall;
-    Chunck* chuncks;
-    BlocType blocTypes[2*BLOC_TYPE_COUNT];
-    Uint8 blockOpacity[2*BLOC_TYPE_COUNT];
+	Bloc* blocks;
+	Bloc* backwall;
+	Chunck* chuncks;
+	BlocType blocTypes[2 * BLOC_TYPE_COUNT];
+	Uint8 blockOpacity[2 * BLOC_TYPE_COUNT];
 
-    Uint16 width, height;
-    Uint16 widthChunck, heightChunck;
+	Uint16 width, height;
+	Uint16 widthChunck, heightChunck;
 };
 
 Terrain* initTerrain();
@@ -61,6 +61,7 @@ void saveTerrain(Terrain* terrain);
 void loadTerrain(Terrain* terrain);
 void destroyTerrain(Terrain* terrain);
 
+Uint32 getBlockIndex(Uint32 x, Uint32 y);
 Bloc getBlock(Terrain* terrain, Uint32 x, Uint32 y);
 Bloc getBackwall(Terrain* terrain, Uint32 x, Uint32 y);
 Bloc* getBlockPtr(Terrain* terrain, Uint32 x, Uint32 y);
@@ -102,5 +103,5 @@ Uint32 getChunck(Uint32 x, Uint32 y);
 Chunck* getChunckPtr(Terrain* terrain, Uint32 x, Uint32 y);
 void destroyChuncks(Terrain* terrain);
 
-extern ChunckRenderer* chunckRenderer;  //Global var
-
+class TerrainRenderer;
+extern TerrainRenderer* terrainRenderer;

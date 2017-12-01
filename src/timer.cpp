@@ -1,5 +1,7 @@
 #include "timer.h"
 
+Timer* timerStack;
+
 void initTimer(Timer* timer, unsigned int ticksDelay, Uint8 pausable, Uint8 isLooping)
 {
     timer->ticksDelay = ticksDelay;
