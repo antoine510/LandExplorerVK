@@ -8,6 +8,7 @@ uint32_t getMemoryType(uint32_t typeBits, vk::MemoryPropertyFlags requirements_m
 class AllocatedBuffer {
 public:
 	AllocatedBuffer(vk::DeviceSize bufSize, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties);
+	AllocatedBuffer(AllocatedBuffer&& old) noexcept : _buffer(old._buffer), _memory(old._memory), _size(old._size) { old._buffer = nullptr; old._memory = nullptr; }
 	~AllocatedBuffer();
 
 	operator vk::Buffer() const {

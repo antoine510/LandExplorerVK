@@ -34,5 +34,7 @@ else()
 	endif()
 endif()
 
+add_definitions("/MP" "/std:c++17")
+
 add_subdirectory(src)
 

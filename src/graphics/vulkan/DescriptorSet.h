@@ -1,12 +1,15 @@
 #pragma once
 
 #include <vulkan/vulkan.hpp>
+#include <unordered_map>
 
 class DescriptorSetBinding {
 public:
 	DescriptorSetBinding(uint32_t binding, vk::DescriptorType type, vk::ShaderStageFlags stage, vk::DescriptorBufferInfo bufferInfo);
 	DescriptorSetBinding(uint32_t binding, vk::DescriptorType type, vk::ShaderStageFlags stage, vk::DescriptorImageInfo imageInfo);
 	DescriptorSetBinding(uint32_t binding, vk::DescriptorType type, vk::ShaderStageFlags stage);
+
+	bool readyForWriting() const { return _bufferInfo || _imageInfo; }
 
 private:
 	friend class DescriptorSet;
@@ -20,21 +23,27 @@ private:
 
 class DescriptorSet {
 public:
-	DescriptorSet(vk::ArrayProxy<DescriptorSetBinding> bindings);
-	~DescriptorSet();
+	DescriptorSet(vk::DescriptorPool& pool, vk::DescriptorSetLayout& layout);
+
+	static vk::DescriptorPool createPool(const std::unordered_map<vk::DescriptorType, uint32_t>& poolMap, uint32_t maxSets);
+	static void destroyPool(vk::DescriptorPool pool);
+
+	static vk::DescriptorSetLayout createLayout(vk::ArrayProxy<DescriptorSetBinding> bindings);
+	static void destroyLayout(vk::DescriptorSetLayout layout);
 
 	void writeBinding(const DescriptorSetBinding& binding);
-
-	void bind(vk::CommandBuffer& cmdBuf);
 
 	operator vk::DescriptorSet() const {
 		return _set;
 	}
 
-	auto& getLayoutRef() const { return _layout; }
+	bool isWritten() const { return _written; }
+	void erase() { _written = false; }
 
 private:
-	vk::DescriptorPool _pool;
+	bool _written = false;
+
+	vk::DescriptorPool& _pool;
 	vk::DescriptorSet _set;
-	vk::DescriptorSetLayout _layout;
+	vk::DescriptorSetLayout& _layout;
 };

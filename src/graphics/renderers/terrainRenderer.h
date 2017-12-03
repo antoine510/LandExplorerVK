@@ -9,7 +9,7 @@
 class TerrainRenderer {
 public:
 	TerrainRenderer(Swapchain& swapchain, StagedImage& blocAtlas, StagedImage& backwallAtlas, SDL_Point* viewOrigin);
-	~TerrainRenderer() { delete _descSet; delete _pipeline; }
+	~TerrainRenderer() { DescriptorSet::destroyPool(_pool); DescriptorSet::destroyLayout(_layout); delete _pipeline; }
 
 	void setTerrain(Terrain* terrain);
 	void setSkyColor(SDL_Color color) {
@@ -24,7 +24,7 @@ public:
 	void renderTerrain(vk::CommandBuffer& cmdBuf, bool backwall);
 
 private:
-	static constexpr int gridW = 16, gridH = 16;
+	static constexpr int gridW = 16, gridH = 16; // ! Shader depends on these values !
 
 	struct PushConstants {
 		glm::vec4 pos;
@@ -34,8 +34,12 @@ private:
 
 	void updateChunck(int xc, int yc, int wc);
 
+	vk::DescriptorSetLayout createLayout();
+
 	VertexBuffer _vBuf;
-	DescriptorSet* _descSet;
+	vk::DescriptorPool _pool = DescriptorSet::createPool({{vk::DescriptorType::eStorageBufferDynamic, 1}, {vk::DescriptorType::eCombinedImageSampler, 1}}, 2);
+	vk::DescriptorSetLayout _layout = createLayout();
+	DescriptorSet _blocSet, _backwallSet;
 	Pipeline* _pipeline;
 	std::vector<Shader> _shaders;
 

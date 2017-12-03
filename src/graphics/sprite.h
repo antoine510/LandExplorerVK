@@ -16,7 +16,9 @@ public:
 	Sprite(SDL_Surface* srf) : StagedImage(srf), _realSize(_w, _h) { setScreenSize(_realSize); }
 	Sprite(const std::string& text, const SDL_Color& color, TTF_Font* font);
 	Sprite(unsigned int width, unsigned int height);
-	~Sprite() = default;
+	Sprite(const Sprite& other) = delete;
+
+	~Sprite() { _descSet.erase(); }
 
 	Sprite& setScale(float scale) { setScreenSize(_realSize * scale); return *this; }
 	Sprite& setScale(float xScale, float yScale) { setScreenSize(_realSize * Vec2(xScale, yScale)); return *this; }
@@ -26,6 +28,7 @@ public:
 		_pushConsts.pos = Vec2(-1, -1) + 2.f * _screenOrigin + (Vec2(posX, posY) - _realSize * _origin) / Vec2(myDisplayMode.w >> 1, myDisplayMode.h >> 1);
 		return *this;
 	}
+	Sprite& setLayer(unsigned int layer) { _pushConsts.layer = layer; }
 
 	Sprite& setOrigin(float rX, float rY) { _origin = Vec2(rX, rY); return *this; }
 	Sprite& setScreenOrigin(float rX, float rY) { _screenOrigin = Vec2(rX, rY); return *this; }
@@ -59,7 +62,7 @@ public:
 	}
 
 	void draw(vk::CommandBuffer& cmdBuf) {
-		_descSet->writeBinding(DescriptorSetBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, getImageInfo()));
+		cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, _pipeline->getLayout(), 0u, (const vk::DescriptorSet&)_descSet, nullptr);
 		cmdBuf.pushConstants<PushConstants>(_pipeline->getLayout(), vk::ShaderStageFlagBits::eAllGraphics, 0, _pushConsts);
 		cmdBuf.draw(6, 1, 0, 0);
 	}
@@ -69,8 +72,12 @@ public:
 	static void teardownSpriteRendering();
 
 private:
+	static constexpr int maxSprites = 100;
+
 	static VertexBuffer* _vBuf;
-	static DescriptorSet* _descSet;
+	static vk::DescriptorPool _descPool;
+	static vk::DescriptorSetLayout _descLayout;
+	static std::vector<DescriptorSet> _descSets;
 	static Pipeline* _pipeline;
 	static std::vector<Shader> _shaders;
 
@@ -79,7 +86,15 @@ private:
 		glm::vec4 texCoords;
 		glm::vec4 colorAlphaMod;
 		glm::vec2 pos;
+		uint32_t layer;
 	};
+
+	DescriptorSet& getDescSet() {
+		auto res = std::find_if(_descSets.begin(), _descSets.end(), [](const DescriptorSet& set)->bool { return !set.isWritten(); });
+		SDL_assert(res != _descSets.end());
+		res->writeBinding(DescriptorSetBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, getImageInfo()));
+		return *res;
+	}
 
 	void setScreenSize(Vec2 size) {
 		_pushConsts.sizeRot[0][0] = size.x / (myDisplayMode.w >> 1);
@@ -90,6 +105,7 @@ private:
 	Vec2 _origin;		// Normalized origin vector
 	Vec2 _screenOrigin;	// Normalized screen origin vector
 	PushConstants _pushConsts;
+	DescriptorSet& _descSet = getDescSet();
 };
 
 /*typedef struct Texture {

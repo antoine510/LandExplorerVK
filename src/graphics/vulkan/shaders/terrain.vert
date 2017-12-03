@@ -4,7 +4,7 @@
 layout (binding = 0) buffer TerrainBuffer {
 	//blocs: 0x00|intensity|backwallTile|blocTile
 	//blocTile/backwallTile: 0xV|U
-	uint blocs[4096];
+	uint blocs[256];
 } terrainBuffer;
 
 layout(push_constant) uniform VertexPush {
@@ -36,5 +36,5 @@ void main() {
 	
 	outUV = vec2(texU, texV) / 16.f;
 	intensity = ((blocType >> 16) & 0xff) / 255.0f;
-	gl_Position = vec4((vec2(xCoord, yCoord) + vertexPush.transform.xy) * vertexPush.transform.zw, 0, 1);
+	gl_Position = vec4((vec2(xCoord, yCoord) + vertexPush.transform.xy) * vertexPush.transform.zw, vertexPush.backwall ? 3 : 1, 1);
 }

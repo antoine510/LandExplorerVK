@@ -34,10 +34,19 @@ void initExplorer(LandExplorer* landExplorer)
 
 void mainLoop(LandExplorer* landExplorer)
 {
+	SDL_Event event;
     const int totTime = (1000 / FPS);
     int initTime;
     do
     {
+		while(SDL_PollEvent(&event)) {
+			switch(event.type) {
+			case SDL_QUIT:
+				landExplorer->mode = MURESULT_QUIT;
+				break;
+			}
+		}
+
         initTime = SDL_GetTicks();
 		startFrame(landExplorer->gfx);
 		Sprite::startSpriteRendering(landExplorer->gfx->cmdBuf);

@@ -4,6 +4,7 @@
 #include "Swapchain.h"
 
 #define VKassert(vkRes) SDL_assert(vkRes == VK_SUCCESS)
+#define VKassert_always(vkRes) SDL_assert_always(vkRes == VK_SUCCESS)
 
 VkDebugReportCallbackEXT VulkanState::debugCallback;
 
@@ -52,7 +53,7 @@ void VulkanState::setup(SDL_Window* window) {
 #ifdef _DEBUG
 	vk::DebugReportCallbackCreateInfoEXT debugInfo(vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::eWarning, debugCB);
 	auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)inst.getProcAddr("vkCreateDebugReportCallbackEXT");
-	VKassert(vkCreateDebugReportCallbackEXT(inst, &(VkDebugReportCallbackCreateInfoEXT)debugInfo, nullptr, &debugCallback));
+	VKassert_always(vkCreateDebugReportCallbackEXT(inst, &(VkDebugReportCallbackCreateInfoEXT)debugInfo, nullptr, &debugCallback));
 #endif // DEBUG
 
 	VkSurfaceKHR cWindowKHR = nullptr;

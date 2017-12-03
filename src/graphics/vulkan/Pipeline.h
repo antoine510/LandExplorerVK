@@ -13,6 +13,8 @@ public:
 			 const vk::DescriptorSetLayout& descSetLayout,
 			 vk::ArrayProxy<Shader> shaders,
 			 vk::RenderPass rp);
+	Pipeline(Pipeline&& old) noexcept : _pipeline(old._pipeline) { old._pipeline = nullptr; }
+
 	~Pipeline();
 
 	auto getLayout() const { return _layout; }

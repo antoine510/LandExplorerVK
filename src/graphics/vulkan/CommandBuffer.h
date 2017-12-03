@@ -10,6 +10,8 @@ public:
 			vk::CommandBufferAllocateInfo(VulkanState::cmdPoolTransient, vk::CommandBufferLevel::ePrimary, 1))[0]) {
 		begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 	}
+	OneUseCommandBuffer(const OneUseCommandBuffer& other) = delete;
+	OneUseCommandBuffer(OneUseCommandBuffer&& old) = delete;
 
 	~OneUseCommandBuffer() {
 		end();

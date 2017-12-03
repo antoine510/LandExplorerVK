@@ -5,6 +5,7 @@
 class Shader {
 public:
 	Shader(const std::string& name, vk::ShaderStageFlagBits stage);
+	Shader(Shader&& old) : _shader(old._shader), _stage(old._stage) { old._shader = nullptr; }
 	~Shader();
 
 	operator vk::ShaderModule() const {

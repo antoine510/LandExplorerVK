@@ -2,11 +2,9 @@
 #extension GL_ARB_separate_shader_objects : enable
 
 layout (binding = 1) uniform sampler2D blocSampler;
-layout (binding = 2) uniform sampler2D backwallSampler;
 
 layout(push_constant) uniform FragPush {
 	layout(offset = 16) vec3 skyColor;
-	layout(offset = 28) bool backwall;
 } fragPush;
 
 layout (location = 0) in vec2 inUV;

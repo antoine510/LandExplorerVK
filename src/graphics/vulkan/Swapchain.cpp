@@ -84,4 +84,5 @@ void Swapchain::presentCmdBuffer(vk::CommandBuffer& cmdBuffer) {
 
 	VulkanState::deviceQueue.presentKHR(_presentInfo);
 	cmdBuffer.reset(vk::CommandBufferResetFlags());
+	VulkanState::device.resetFences(_imageReady);
 }

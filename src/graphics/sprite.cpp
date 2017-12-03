@@ -7,7 +7,9 @@
 #include "utility/mathUtility.h"
 
 VertexBuffer* Sprite::_vBuf;
-DescriptorSet* Sprite::_descSet;
+vk::DescriptorPool Sprite::_descPool;
+vk::DescriptorSetLayout Sprite::_descLayout;
+std::vector<DescriptorSet> Sprite::_descSets;
 Pipeline* Sprite::_pipeline;
 std::vector<Shader> Sprite::_shaders;
 
@@ -18,19 +20,22 @@ void Sprite::setupSpriteRendering(const Swapchain& swapchain) {
 	_vBuf = new VertexBuffer(6, 8, vk::Format::eR32G32Sfloat);
 	_vBuf->getStagingBuffer().update(spriteVertices);
 	_vBuf->stageBuffer();
-	_descSet = new DescriptorSet(DescriptorSetBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment));
-	_pipeline = new Pipeline(swapchain.getExtent(), *_vBuf, vk::PushConstantRange(vk::ShaderStageFlagBits::eAllGraphics, 0u, 56u), _descSet->getLayoutRef(), _shaders, swapchain.getRenderPass());
+	_descPool = DescriptorSet::createPool({{vk::DescriptorType::eCombinedImageSampler, 1}}, maxSprites);
+	_descLayout = DescriptorSet::createLayout(DescriptorSetBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment));
+	_descSets.reserve(maxSprites);
+	for(int i = 0; i < maxSprites; ++i) _descSets.emplace_back(_descPool, _descLayout);
+	_pipeline = new Pipeline(swapchain.getExtent(), *_vBuf, vk::PushConstantRange(vk::ShaderStageFlagBits::eAllGraphics, 0u, 60u), _descLayout, _shaders, swapchain.getRenderPass());
 }
 
 void Sprite::startSpriteRendering(const vk::CommandBuffer& cmdBuf) {
 	cmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, *_pipeline);
-	cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, _pipeline->getLayout(), 0u, (vk::DescriptorSet)*_descSet, 0u);
 	cmdBuf.bindVertexBuffers(0, (vk::Buffer)*_vBuf, (vk::DeviceSize)0u);
 }
 
 void Sprite::teardownSpriteRendering() {
 	delete _pipeline;
-	delete _descSet;
+	DescriptorSet::destroyPool(_descPool);
+	DescriptorSet::destroyLayout(_descLayout);
 	delete _vBuf;
 	_shaders.clear();
 }

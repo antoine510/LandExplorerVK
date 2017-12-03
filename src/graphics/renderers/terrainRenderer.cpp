@@ -17,18 +17,28 @@ VertexBuffer genGrid(uint8_t w, uint8_t h) {
 
 TerrainRenderer::TerrainRenderer(Swapchain& swapchain, StagedImage& blocAtlas, StagedImage& backwallAtlas, SDL_Point* viewOrigin) :
 	_blocAtlas(blocAtlas), _backwallAtlas(backwallAtlas), _viewOrigin(viewOrigin),
-	_blocBuffer(4 * gridW * gridH, vk::BufferUsageFlagBits::eStorageBuffer),
-	_vBuf(genGrid(gridW, gridH)) {
+	_blocBuffer(4 * TERRAIN_WIDTH * TERRAIN_HEIGHT, vk::BufferUsageFlagBits::eStorageBuffer),
+	_vBuf(genGrid(gridW, gridH)),
+	_blocSet(_pool, _layout), _backwallSet(_pool, _layout) {
 	_vBuf.lock();
 	_shaders.emplace_back("terrain", vk::ShaderStageFlagBits::eVertex);
 	_shaders.emplace_back("terrain", vk::ShaderStageFlagBits::eFragment);
-	std::vector<DescriptorSetBinding> bindings;
-	bindings.emplace_back(0, vk::DescriptorType::eStorageBufferDynamic, vk::ShaderStageFlagBits::eVertex, _blocBuffer.getBufferDescriptor(0, 4 * 64 * 64));
-	bindings.emplace_back(1, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, _blocAtlas.getImageInfo());
-	bindings.emplace_back(2, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, _backwallAtlas.getImageInfo());
-	_descSet = new DescriptorSet(bindings);
-	_pipeline = new Pipeline(swapchain.getExtent(), _vBuf, vk::PushConstantRange(vk::ShaderStageFlagBits::eAllGraphics, 0u, 32u), _descSet->getLayoutRef(), _shaders, swapchain.getRenderPass());
+
+	_blocSet.writeBinding(DescriptorSetBinding(0, vk::DescriptorType::eStorageBufferDynamic, vk::ShaderStageFlagBits::eVertex, _blocBuffer.getBufferDescriptor(0, 4 * gridW * gridH)));
+	_blocSet.writeBinding(DescriptorSetBinding(1, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, _blocAtlas.getImageInfo()));
+	_backwallSet.writeBinding(DescriptorSetBinding(0, vk::DescriptorType::eStorageBufferDynamic, vk::ShaderStageFlagBits::eVertex, _blocBuffer.getBufferDescriptor(0, 4 * gridW * gridH)));
+	_backwallSet.writeBinding(DescriptorSetBinding(1, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, _backwallAtlas.getImageInfo()));
+
+	_pipeline = new Pipeline(swapchain.getExtent(), _vBuf, vk::PushConstantRange(vk::ShaderStageFlagBits::eAllGraphics, 0u, 32u), _layout, _shaders, swapchain.getRenderPass());
 	_pushConsts.pos = glm::vec4(0, 0, 2.0f * BLOC_SIZE / myDisplayMode.w, 2.0f * BLOC_SIZE / myDisplayMode.h);
+}
+
+vk::DescriptorSetLayout TerrainRenderer::createLayout() {
+	std::vector<DescriptorSetBinding> v;
+	v.reserve(2);
+	v.emplace_back(0, vk::DescriptorType::eStorageBufferDynamic, vk::ShaderStageFlagBits::eVertex);
+	v.emplace_back(1, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment);
+	return DescriptorSet::createLayout(v);
 }
 
 void TerrainRenderer::setTerrain(Terrain* terrain) {
@@ -76,7 +86,7 @@ void TerrainRenderer::renderTerrain(vk::CommandBuffer& cmdBuf, bool backwall) {
 			int offset = (x + y * (TERRAIN_WIDTH / gridW)) * gridW * gridH;
 			_pushConsts.pos.x = x * gridW - float(_viewOrigin->x) / BLOC_SIZE;
 			_pushConsts.pos.y = y * gridH - float(_viewOrigin->y) / BLOC_SIZE;
-			cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, _pipeline->getLayout(), 0, (vk::DescriptorSet)*_descSet, 4 * offset);
+			cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, _pipeline->getLayout(), 0, (vk::DescriptorSet)(backwall ? _backwallSet : _blocSet), 4 * offset);
 			cmdBuf.pushConstants<PushConstants>(_pipeline->getLayout(), vk::ShaderStageFlagBits::eAllGraphics, 0, _pushConsts);
 			cmdBuf.draw(6 * gridW * gridH, 1, 0, 0);
 		}

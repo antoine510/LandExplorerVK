@@ -11,6 +11,7 @@ class AllocatedImage {
 public:
 	AllocatedImage(const vk::ImageCreateInfo& imageCI);
 	AllocatedImage(const vk::Image& source, vk::Format format) : _image(source), _format(format) {}
+	AllocatedImage(AllocatedImage&& old) noexcept : _image(old._image), _format(old._format), _memory(old._memory), _layout(old._layout) { old._image = nullptr; old._memory = nullptr; }
 
 	~AllocatedImage();
 
@@ -27,13 +28,14 @@ class ViewedImage : public AllocatedImage {
 public:
 	ViewedImage(const vk::ImageCreateInfo& imageCI, vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor);
 	ViewedImage(const vk::Image& source, vk::Format format, vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor);
+	ViewedImage(ViewedImage&& old) noexcept : AllocatedImage(std::move(old)), _view(old._view) { old._view = nullptr; }
+
 	~ViewedImage();
 
 	vk::ImageView getView() { return _view; }
 
 protected:
 	vk::ImageView _view;
-
 };
 
 class StagedImage : public ViewedImage {
@@ -41,6 +43,7 @@ public:
 	StagedImage(SDL_Surface* surface, bool isMutable = false);
 	StagedImage(const std::string& path, bool isMutable = false);
 	StagedImage(unsigned int width, unsigned int height, unsigned int pitch = 0);
+
 	~StagedImage() { _staging.release(); }
 
 	AllocatedBuffer& getStagingBuffer() const { SDL_assert(_staging); return *_staging; }

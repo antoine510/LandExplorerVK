@@ -7,6 +7,9 @@
 class Swapchain {
 public:
 	Swapchain(vk::Extent2D extent, vk::PresentModeKHR presentMode);
+	Swapchain(const Swapchain& other) = delete;
+	Swapchain(Swapchain&& old) = delete;
+
 	~Swapchain();
 
 	void beginCmdBuffer(vk::CommandBuffer& cmdBuffer);

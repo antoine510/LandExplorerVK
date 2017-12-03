@@ -45,7 +45,7 @@ Pipeline::Pipeline(vk::Extent2D extent,
 	vk::Viewport pipelineViewport(0.0f, 0.0f, (float)extent.width, (float)extent.height, 0.0f, 1.0f);
 	vk::Rect2D pipelineScissor(vk::Offset2D(), extent);
 	vk::PipelineViewportStateCreateInfo pipelineViewportCI(vk::PipelineViewportStateCreateFlags(), 1, &pipelineViewport, 1, &pipelineScissor);
-	//vk::PipelineDepthStencilStateCreateInfo pipelineDepthStencilCI(vk::PipelineDepthStencilStateCreateFlags(), false, false);
+	vk::PipelineDepthStencilStateCreateInfo pipelineDepthStencilCI(vk::PipelineDepthStencilStateCreateFlags(), true, true, vk::CompareOp::eLessOrEqual);
 	vk::PipelineMultisampleStateCreateInfo pipelineMultisampleCI;
 	vk::GraphicsPipelineCreateInfo pipelineCI(vk::PipelineCreateFlags(), (uint32_t)pipelineShaderStagesCI.size(),
 											  pipelineShaderStagesCI.data(),
@@ -55,12 +55,12 @@ Pipeline::Pipeline(vk::Extent2D extent,
 											  &pipelineViewportCI,
 											  &pipelineRasterizationCI,
 											  &pipelineMultisampleCI,
-											  nullptr,
+											  &pipelineDepthStencilCI,
 											  &pipelineColorBlendCI,
 											  nullptr,
 											  _layout,
 											  rp, 0);
-	auto pipeline = VulkanState::device.createGraphicsPipeline(vk::PipelineCache(), pipelineCI);
+	_pipeline = VulkanState::device.createGraphicsPipeline(vk::PipelineCache(), pipelineCI);
 }
 
 Pipeline::~Pipeline() {
