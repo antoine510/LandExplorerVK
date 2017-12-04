@@ -24,7 +24,7 @@ void backgroundRendererLoadTextures(BackgroundRenderer* bgRenderer, SDL_Color* s
 			bgRenderer->background[index] = new Sprite(filename);
 			auto& sprite = *bgRenderer->background[index];
 			if(index == BG_BIOMES + BIOME_PLAINS || index == BG_BIOMES + BIOME_MOUNTAINS || index == BG_BIOMES + BIOME_OCEAN) {
-				sprite.setColorMod(*skyColor).setClipSize(TERRAIN_WIDTH * BLOC_SIZE / 2, sprite.height()).setScale(2.5f).setSampling(true);
+				sprite.setColorMod(*skyColor).setClipSize(TERRAIN_WIDTH * BLOC_SIZE / 2, sprite.getExtent().height).setScale(2.5f).setSampling(true);
 			} else {
 				sprite.setFullscreen();
 			}
@@ -41,7 +41,7 @@ void setBackgroundRendererTime(BackgroundRenderer* bgRenderer, float* levelTime)
 
 void renderBackground(BackgroundRenderer* bgRenderer, Graphics* gfx, int bgID) {
 	Sprite* bg = bgRenderer->background[bgID];
-	bg->setColorMod(gfx->texPack->skyColor);
+	//bg->setColorMod(gfx->texPack->skyColor);
 	//SDL_Color bgColor = modulateColor(&gfx->texPack->skyColor, 0.77f, 0.9f, 1.0f);
 
 	int offset = 0;
@@ -68,9 +68,7 @@ void renderSun(BackgroundRenderer* bgRenderer, vk::CommandBuffer& cmdBuf, float 
 }
 
 void destroyBackgroundRenderer(BackgroundRenderer* bgRenderer) {
-	for(Sprite* bg : bgRenderer->background) {
-		if(bg != nullptr) delete bg;
-	}
-	if(bgRenderer->sun != nullptr) delete bgRenderer->sun;
+	for(Sprite* bg : bgRenderer->background) delete bg;
+	delete bgRenderer->sun;
 	free(bgRenderer);
 }

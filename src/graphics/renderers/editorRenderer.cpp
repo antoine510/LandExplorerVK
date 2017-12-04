@@ -80,6 +80,8 @@ void destroyEditorRenderer(EditorRenderer* editorRenderer) {
 	delete editorRenderer->modeNameTexture;
 	delete editorRenderer->selectRefTex;
 	delete editorRenderer->selectModuleTex;
+	delete editorRenderer->selectArcherTex;
+	delete editorRenderer->selectGuardTex;
 	delete editorRenderer->bgOverlay;
 }
 

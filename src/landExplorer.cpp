@@ -49,7 +49,7 @@ void mainLoop(LandExplorer* landExplorer)
 
         initTime = SDL_GetTicks();
 		startFrame(landExplorer->gfx);
-		Sprite::startSpriteRendering(landExplorer->gfx->cmdBuf);
+		spriteRenderer->bind(landExplorer->gfx->cmdBuf);
 
         updateTimers(timerStack);
         processKeystates(&landExplorer->keyStates);

@@ -36,8 +36,17 @@ AllocatedBuffer::~AllocatedBuffer() {
 
 void AllocatedBuffer::update(const void* data, vk::DeviceSize offset, vk::DeviceSize updateSize) {
 	if(updateSize == 0) updateSize = _size;
-	void* bufferMappedMemory = VulkanState::device.mapMemory(_memory, offset, updateSize);
+	void* bufferMappedMemory = mapMemory(offset, updateSize);
 	memcpy(bufferMappedMemory, data, updateSize);
+	unmapMemory();
+}
+
+void* AllocatedBuffer::mapMemory(vk::DeviceSize offset, vk::DeviceSize size) {
+	if(size == 0) size = _size;
+	return VulkanState::device.mapMemory(_memory, offset, size);
+}
+
+void AllocatedBuffer::unmapMemory() {
 	VulkanState::device.unmapMemory(_memory);
 }
 

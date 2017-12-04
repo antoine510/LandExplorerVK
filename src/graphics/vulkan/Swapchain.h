@@ -25,8 +25,8 @@ private:
 
 	vk::SwapchainKHR _swapchain;
 	vk::Extent2D _extent;
-	std::vector<ViewedImage> _colorImages;
-	ViewedImage _depthImage;
+	std::vector<AllocatedImage> _colorImages;
+	AllocatedImage _depthImage;
 
 	RenderPass _renderPass;
 	std::vector<vk::Framebuffer> _framebuffers;

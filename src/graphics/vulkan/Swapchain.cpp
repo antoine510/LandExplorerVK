@@ -9,7 +9,7 @@ Swapchain::Swapchain(vk::Extent2D extent, vk::PresentModeKHR presentMode) :
 	_depthFormat(vk::Format::eD16Unorm),
 	_depthImage(vk::ImageCreateInfo(vk::ImageCreateFlags(), vk::ImageType::e2D, _depthFormat, vk::Extent3D(extent.width, extent.height, 1),
 									1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment),
-				vk::ImageAspectFlagBits::eDepth),
+				0 ,vk::ImageAspectFlagBits::eDepth),
 	_renderPass(_colorFormat, _depthFormat),
 	_hasImage(VulkanState::device.createSemaphore(vk::SemaphoreCreateInfo())),
 	_presentSubmitInfo(vk::SubmitInfo(1, &_hasImage, &imageRequiredStage, 1)),
@@ -49,6 +49,7 @@ Swapchain::Swapchain(vk::Extent2D extent, vk::PresentModeKHR presentMode) :
 Swapchain::~Swapchain() {
 	VulkanState::device.waitIdle();
 
+	for(auto& fbuf : _framebuffers) VulkanState::device.destroyFramebuffer(fbuf);
 	VulkanState::device.destroySemaphore(_hasImage);
 	VulkanState::device.destroyFence(_imageReady);
 	VulkanState::device.destroySwapchainKHR(_swapchain);

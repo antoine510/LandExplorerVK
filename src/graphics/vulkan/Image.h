@@ -9,64 +9,81 @@ struct SDL_Surface;
 
 class AllocatedImage {
 public:
-	AllocatedImage(const vk::ImageCreateInfo& imageCI);
-	AllocatedImage(const vk::Image& source, vk::Format format) : _image(source), _format(format) {}
-	AllocatedImage(AllocatedImage&& old) noexcept : _image(old._image), _format(old._format), _memory(old._memory), _layout(old._layout) { old._image = nullptr; old._memory = nullptr; }
+	AllocatedImage(const vk::ImageCreateInfo& imageCI, uint32_t pitch = 0, vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor);
+	AllocatedImage(const vk::Image& source, vk::Format format, vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor) :
+		_image(source), _format(format), _view(createView(aspect)) {}
+	AllocatedImage(AllocatedImage&& old) noexcept :
+		_image(old._image), _format(old._format), _memory(old._memory), _layout(old._layout), _view(old._view), _extent(old._extent), _wPitch(old._wPitch) {
+		old._image = nullptr; old._memory = nullptr; old._view = nullptr;
+	}
 
 	~AllocatedImage();
 
 	void switchLayout(vk::ImageLayout newLayout, vk::CommandBuffer& cmdBuffer = vk::CommandBuffer());
 
+	const vk::Extent3D getExtent() const { return _extent; }
+	vk::ImageView getView() { return _view; }
+
 protected:
+	vk::ImageView createView(vk::ImageAspectFlags aspect);
+
 	vk::Image _image;
 	vk::Format _format;
 	vk::DeviceMemory _memory;
 	vk::ImageLayout _layout = vk::ImageLayout::eUndefined;
-};
 
-class ViewedImage : public AllocatedImage {
-public:
-	ViewedImage(const vk::ImageCreateInfo& imageCI, vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor);
-	ViewedImage(const vk::Image& source, vk::Format format, vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor);
-	ViewedImage(ViewedImage&& old) noexcept : AllocatedImage(std::move(old)), _view(old._view) { old._view = nullptr; }
-
-	~ViewedImage();
-
-	vk::ImageView getView() { return _view; }
-
-protected:
 	vk::ImageView _view;
+
+	vk::Extent3D _extent;
+	uint32_t _wPitch;
 };
 
-class StagedImage : public ViewedImage {
+struct ImageSamplers {
+	ImageSamplers() : linearSampler(vk::Filter::eLinear), nearestSampler(vk::Filter::eNearest) {}
+
+	struct ImageSampler : vk::Sampler {
+		ImageSampler(vk::Filter maxFilter);
+		~ImageSampler();
+	};
+
+	ImageSampler linearSampler, nearestSampler;
+};
+extern ImageSamplers* imageSamplers;
+
+class SampledImage : public AllocatedImage {
 public:
-	StagedImage(SDL_Surface* surface, bool isMutable = false);
-	StagedImage(const std::string& path, bool isMutable = false);
-	StagedImage(unsigned int width, unsigned int height, unsigned int pitch = 0);
+	SampledImage(SDL_Surface* surface);
+	SampledImage(const std::string& path) : SampledImage(loadSurface(path)) {}
+	SampledImage(unsigned int width, unsigned int height, unsigned int pitch = 0);
 
-	~StagedImage() { _staging.release(); }
-
-	AllocatedBuffer& getStagingBuffer() const { SDL_assert(_staging); return *_staging; }
-	void stageImage();
+	~SampledImage() {}
 
 	vk::DescriptorImageInfo getImageInfo() const { return vk::DescriptorImageInfo(_sampler, _view, _layout); }
 
-	void lock() { _staging.release(); }
-	void setSampling(bool isLinear) { _sampler = getSampler(isLinear); }
+	void setSampling(bool isLinear) { _sampler = isLinear ? imageSamplers->linearSampler : imageSamplers->nearestSampler; }
 
-	uint32_t width() const { return _w; }
-	uint32_t height() const { return _h; }
+	void stageBuffer(const AllocatedBuffer& buf);
 
 protected:
-	struct SamplerHelper : vk::Sampler {
-		SamplerHelper(vk::Filter maxFilter);
-	};
 	static SDL_Surface* loadSurface(const std::string& path);
-	static vk::Sampler& getSampler(bool isLinear = false);
+	AllocatedBuffer createStagingBuffer() const;
+	void uploadPixels(const void* pixels);
 
-	uint32_t _w, _h, _wPitch;
-	std::unique_ptr<AllocatedBuffer> _staging;
+	vk::Sampler _sampler = imageSamplers->nearestSampler;
+};
 
-	vk::Sampler& _sampler = getSampler();
+class StagedImage : public SampledImage {
+public:
+	StagedImage(SDL_Surface* surface) : SampledImage(surface) {}
+	StagedImage(const std::string& path) : SampledImage(loadSurface(path)) {}
+	StagedImage(unsigned int width, unsigned int height, unsigned int pitch = 0) : SampledImage(width, height, pitch) {}
+
+	AllocatedBuffer& getStagingBuffer() { return _staging; }
+	void stageImage() { stageBuffer(_staging); }
+
+protected:
+	void uploadPixels(const void* pixels) { _staging.update(pixels); stageImage(); }
+
+	AllocatedBuffer _staging = createStagingBuffer();
 };
 

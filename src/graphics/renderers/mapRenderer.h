@@ -7,7 +7,8 @@
 
 typedef struct MapRenderer {
     Sprite* mapp;
-    SDL_Surface* pixels;
+	StagingBuffer* buffer;
+	Uint32* mappedBuffer = nullptr;
     Uint32 blockColors[512];
 
     Uint32 x, y, x2, y2;

@@ -8,7 +8,9 @@ static void initRenderers(Graphics* gfx);
 static void destroyRenderers(Graphics* gfx);
 
 SDL_DisplayMode myDisplayMode;
-TerrainRenderer* terrainRenderer;
+ImageSamplers* imageSamplers = nullptr;
+TerrainRenderer* terrainRenderer = nullptr;
+SpriteRenderer* spriteRenderer = nullptr;
 
 Graphics* initGraphics() {
 	Graphics* gfx = (Graphics*)malloc(sizeof(Graphics));
@@ -21,8 +23,7 @@ Graphics* initGraphics() {
 
 	VulkanState::setup(gfx->window);
 	gfx->swapchain = new Swapchain(vk::Extent2D(myDisplayMode.w, myDisplayMode.h), vk::PresentModeKHR::eFifo);
-
-	Sprite::setupSpriteRendering(*gfx->swapchain);
+	imageSamplers = new ImageSamplers();
 
 	initRenderers(gfx);
 
@@ -36,6 +37,7 @@ Graphics* initGraphics() {
 }
 
 void initRenderers(Graphics* gfx) {
+	spriteRenderer = new SpriteRenderer(*gfx->swapchain);
 	gfx->creditsRenderer = createCreditsRenderer();
 	gfx->playerInterfaceRenderer = createPlayerInterfaceRenderer(gfx);
 	gfx->bgRenderer = createBackgroundRenderer();
@@ -141,12 +143,13 @@ void destroyRenderers(Graphics* gfx) {
 	destroyBackgroundRenderer(gfx->bgRenderer);
 	destroyPlayerInterfaceRenderer(gfx->playerInterfaceRenderer);
 	destroyCreditsRenderer(gfx->creditsRenderer);
+	delete spriteRenderer;
 }
 
 void destroyGraphics(Graphics* gfx) {
 	destroyRenderers(gfx);
 
-	Sprite::teardownSpriteRendering();
+	delete imageSamplers;
 	delete gfx->swapchain;
 	VulkanState::teardown();
 

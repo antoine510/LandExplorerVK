@@ -1,19 +1,12 @@
 #include "sprite.h"
 #include <SDL.h>
-#include <SDL_ttf.h>
+
 
 #include "vulkan/Shader.h"
 #include "vulkan/Swapchain.h"
 #include "utility/mathUtility.h"
 
-VertexBuffer* Sprite::_vBuf;
-vk::DescriptorPool Sprite::_descPool;
-vk::DescriptorSetLayout Sprite::_descLayout;
-std::vector<DescriptorSet> Sprite::_descSets;
-Pipeline* Sprite::_pipeline;
-std::vector<Shader> Sprite::_shaders;
-
-void Sprite::setupSpriteRendering(const Swapchain& swapchain) {
+SpriteRenderer::SpriteRenderer(const Swapchain& swapchain) {
 	float spriteVertices[12] = {0, 0,  0, 1,  1, 1,  0, 0,  1, 1,  1, 0};
 	_shaders.emplace_back("sprite", vk::ShaderStageFlagBits::eVertex);
 	_shaders.emplace_back("sprite", vk::ShaderStageFlagBits::eFragment);
@@ -27,31 +20,13 @@ void Sprite::setupSpriteRendering(const Swapchain& swapchain) {
 	_pipeline = new Pipeline(swapchain.getExtent(), *_vBuf, vk::PushConstantRange(vk::ShaderStageFlagBits::eAllGraphics, 0u, 60u), _descLayout, _shaders, swapchain.getRenderPass());
 }
 
-void Sprite::startSpriteRendering(const vk::CommandBuffer& cmdBuf) {
-	cmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, *_pipeline);
-	cmdBuf.bindVertexBuffers(0, (vk::Buffer)*_vBuf, (vk::DeviceSize)0u);
-}
-
-void Sprite::teardownSpriteRendering() {
+SpriteRenderer::~SpriteRenderer() {
 	delete _pipeline;
 	DescriptorSet::destroyPool(_descPool);
 	DescriptorSet::destroyLayout(_descLayout);
 	delete _vBuf;
 	_shaders.clear();
 }
-
-Sprite::Sprite(const std::string& path) : StagedImage(path), _realSize(_w, _h) {
-	setScreenSize(_realSize);
-}
-
-Sprite::Sprite(const std::string& text, const SDL_Color& color, TTF_Font* font) : StagedImage(TTF_RenderText_Blended(font, text.c_str(), color)), _realSize(_w, _h) {
-	setScreenSize(_realSize);
-}
-
-Sprite::Sprite(unsigned int width, unsigned int height) : StagedImage(width, height), _realSize(_w, _h) {
-	setScreenSize(_realSize);
-}
-
 
 /*Texture* createTextureFromText(OGLRenderer* renderer, const char* text, int outline, SDL_Color color, TTF_Font* font) {
 	Texture* res;

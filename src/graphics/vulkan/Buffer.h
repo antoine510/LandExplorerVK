@@ -21,28 +21,36 @@ public:
 		return vk::DescriptorBufferInfo(_buffer, offset, size);
 	}
 
+	void* mapMemory(vk::DeviceSize offset = 0, vk::DeviceSize size = 0);
+	void unmapMemory();
+
 protected:
 	vk::Buffer _buffer;
 	vk::DeviceMemory _memory;
 	vk::DeviceSize _size;
 };
 
+class StagingBuffer : public AllocatedBuffer {
+public:
+	StagingBuffer(vk::DeviceSize size) : AllocatedBuffer(size, vk::BufferUsageFlagBits::eTransferSrc,
+														 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent) {}
+};
+
 class StagedBuffer : public AllocatedBuffer {
 public:
 	StagedBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage)
 		: AllocatedBuffer(size, vk::BufferUsageFlagBits::eTransferDst | usage, vk::MemoryPropertyFlagBits::eDeviceLocal),
-		_staging(std::make_unique<AllocatedBuffer>(size, vk::BufferUsageFlagBits::eTransferSrc,
-												   vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)) {}
+		_staging(std::make_unique<StagingBuffer>(size)) {}
 
-	AllocatedBuffer& getStagingBuffer() { SDL_assert(_staging); return *_staging; }
+	StagingBuffer& getStagingBuffer() { SDL_assert(_staging); return *_staging; }
 
 	void stageBuffer(vk::DeviceSize offset, vk::DeviceSize size);
 	void stageBuffer() { stageBuffer(0u, _size); }
 
-	void lock() { _staging.release(); }
+	void lock() { _staging = nullptr; }
 
 private:
-	std::unique_ptr<AllocatedBuffer> _staging;
+	std::unique_ptr<StagingBuffer> _staging;
 };
 
 class VertexBuffer : public StagedBuffer {

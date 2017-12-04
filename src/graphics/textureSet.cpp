@@ -25,11 +25,11 @@ TextureSet* createTextureSet(xmlNodePtr texSetNode, const char* path)
             textureCount++;
         } else if (checkName(texture, "animation")) {
             int frameWidth = asIntl(texture, "frameWidth");
-			stateTex->setClipSize(frameWidth, stateTex->height());
+			stateTex->setClipSize(frameWidth, stateTex->getExtent().width);
 
             setTexture(texSet, textureCount, stateTex);
 
-            Animation* anim = initAnimation(textureCount, stateTex->width(), frameWidth, asIntl(texture, "delay"), asBooll(texture, "loop"));
+            Animation* anim = initAnimation(textureCount, stateTex->getExtent().height, frameWidth, asIntl(texture, "delay"), asBooll(texture, "loop"));
             setAnimation(texSet, anim, animCount);
 
             animCount++;

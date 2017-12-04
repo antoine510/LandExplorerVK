@@ -37,7 +37,6 @@ struct Graphics {
 
     SDL_Point viewOrigin;
     SDL_Rect* playerRect;
-    Sprite* deathTextTexture;
 };
 
 Graphics* initGraphics();
