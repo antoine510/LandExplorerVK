@@ -82,7 +82,7 @@ void ai_updateGuard(Entities* entities, int index) {
 		}
 
 		entities->dynData[index].velocity.x += (15.0f / AISPS) * entities->dynData[index].direction;
-		std::clamp(entities->dynData[index].velocity.x, -5.0f, 5.0f);
+		entities->dynData[index].velocity.x = std::clamp(entities->dynData[index].velocity.x, -5.0f, 5.0f);
 		entities->dynData[index].moving = true;
 	} else {
 		entities->dynData[index].moving = false;

@@ -1,48 +1,48 @@
 <?xml version="1.0"?>
 
-<Menu Walign="0.0" Halign="1.0">
+<Menu Walign="0.0" Halign="0.0">
 	<SubMenu id="0" name="Land Explorer">
-		<Button id="0" name="Play" X="100" Y="-280" W="200" H="50"/>
-		<Button id="1" name="Options" X="100" Y="-340" W="200" H="50"/>
-		<Button id="2" name="Instructions" X="100" Y="-400" W="200" H="50"/>
-		<Button id="3" name="Quit" X="100" Y="-460" W="200" H="50"/>
+		<Button id="0" name="Play" X="100" Y="280" W="200" H="50"/>
+		<Button id="1" name="Options" X="100" Y="340" W="200" H="50"/>
+		<Button id="2" name="Instructions" X="100" Y="400" W="200" H="50"/>
+		<Button id="3" name="Quit" X="100" Y="460" W="200" H="50"/>
 	</SubMenu>
 	<SubMenu id="1" name="Options">
-		<Button id="0" name="Graphic options" X="100" Y="-280" W="200" H="50"/>
-		<Button id="1" name="Audio options" X="100" Y="-340" W="200" H="50"/>
-		<Button id="2" name="Key Bindings" X="100" Y="-400" W="200" H="50"/>
-		<Button id="3" name="Back" X="80" Y="-470" W="200" H="50"/>
+		<Button id="0" name="Graphic options" X="100" Y="280" W="200" H="50"/>
+		<Button id="1" name="Audio options" X="100" Y="340" W="200" H="50"/>
+		<Button id="2" name="Key Bindings" X="100" Y="400" W="200" H="50"/>
+		<Button id="3" name="Back" X="80" Y="470" W="200" H="50"/>
 	</SubMenu>
 	<SubMenu id="2" name="Graphic options">
-		<Button id="0" name="1920x1080" X="100" Y="-280" W="200" H="50"/>
-		<Button id="1" name="1024x768" X="100" Y="-340" W="200" H="50"/>
-		<Button id="2" name="800x600" X="100" Y="-400" W="200" H="50"/>
-		<Button id="3" name="Toggle Fullscreen" X="100" Y="-460" W="200" H="50"/>
-		<Button id="4" name="Back" X="80" Y="-530" W="200" H="50"/>
+		<Button id="0" name="1920x1080" X="100" Y="280" W="200" H="50"/>
+		<Button id="1" name="1024x768" X="100" Y="340" W="200" H="50"/>
+		<Button id="2" name="800x600" X="100" Y="400" W="200" H="50"/>
+		<Button id="3" name="Toggle Fullscreen" X="100" Y="460" W="200" H="50"/>
+		<Button id="4" name="Back" X="80" Y="530" W="200" H="50"/>
 	</SubMenu>
 	<SubMenu id="3" name="Audio options">
-		<Slider id="0" name="Master Volume" value="100" min="0" max="100" X="100" Y="-280"/>
-		<Slider id="1" name="Music Volume" value="50" min="0" max="100" X="100" Y="-340"/>
-		<Button id="4" name="Back" X="80" Y="-410" W="200" H="50"/>
+		<Slider id="0" name="Master Volume" value="100" min="0" max="100" X="100" Y="280"/>
+		<Slider id="1" name="Music Volume" value="50" min="0" max="100" X="100" Y="340"/>
+		<Button id="4" name="Back" X="80" Y="410" W="200" H="50"/>
 	</SubMenu>
 	<SubMenu id="4" name="Key Bindings">
-		<Button id="0" name="Quit" X="100" Y="-220" W="200" H="50"/>
-		<Button id="1" name="Left" X="100" Y="-270" W="200" H="50"/>
-		<Button id="2" name="Right" X="100" Y="-320" W="200" H="50"/>
-		<Button id="3" name="Up" X="100" Y="-370" W="200" H="50"/>
-		<Button id="4" name="Down" X="100" Y="-420" W="200" H="50"/>
-		<Button id="5" name="Jump" X="400" Y="-220" W="200" H="50"/>
-		<Button id="6" name="Select" X="400" Y="-270" W="200" H="50"/>
-		<Button id="7" name="Map" X="400" Y="-320" W="200" H="50"/>
-		<Button id="8" name="Editor" X="400" Y="-370" W="200" H="50"/>
-		<Button id="9" name="Inventory" X="400" Y="-420" W="200" H="50"/>
-		<Button id="10" name="Back" X="80" Y="-480" W="200" H="50"/>
+		<Button id="0" name="Quit" X="100" Y="220" W="200" H="50"/>
+		<Button id="1" name="Left" X="100" Y="270" W="200" H="50"/>
+		<Button id="2" name="Right" X="100" Y="320" W="200" H="50"/>
+		<Button id="3" name="Up" X="100" Y="370" W="200" H="50"/>
+		<Button id="4" name="Down" X="100" Y="420" W="200" H="50"/>
+		<Button id="5" name="Jump" X="400" Y="220" W="200" H="50"/>
+		<Button id="6" name="Select" X="400" Y="270" W="200" H="50"/>
+		<Button id="7" name="Map" X="400" Y="320" W="200" H="50"/>
+		<Button id="8" name="Editor" X="400" Y="370" W="200" H="50"/>
+		<Button id="9" name="Inventory" X="400" Y="420" W="200" H="50"/>
+		<Button id="10" name="Back" X="80" Y="480" W="200" H="50"/>
 	</SubMenu>
 	<SubMenu id="5" name="Instructions">
-		<Label id="0" text="You wake up on the beach" X="100" Y="-280"/>
-		<Label id="1" text="Your only option is to try and find life" X="100" Y="-330"/>
-		<Label id="2" text="But you shall stay cautious" X="100" Y="-380"/>
-		<Label id="3" text="Go east !" X="100" Y="-460"/>
-		<Button id="0" name="Back" X="80" Y="-540" W="200" H="50"/>
+		<Label id="0" text="You wake up on the beach" X="100" Y="280"/>
+		<Label id="1" text="Your only option is to try and find life" X="100" Y="330"/>
+		<Label id="2" text="But you shall stay cautious" X="100" Y="380"/>
+		<Label id="3" text="Go east !" X="100" Y="460"/>
+		<Button id="0" name="Back" X="80" Y="540" W="200" H="50"/>
 	</SubMenu>
 </Menu>

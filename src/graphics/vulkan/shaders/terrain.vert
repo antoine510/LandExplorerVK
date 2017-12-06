@@ -36,5 +36,5 @@ void main() {
 	
 	outUV = vec2(texU, texV) / 16.f;
 	intensity = ((blocType >> 16) & 0xff) / 255.0f;
-	gl_Position = vec4((vec2(xCoord, yCoord) + vertexPush.transform.xy) * vertexPush.transform.zw, vertexPush.backwall ? 3 : 1, 1);
+	gl_Position = vec4((vec2(xCoord, yCoord) + vertexPush.transform.xy) * vertexPush.transform.zw + vec2(-1, -1), vertexPush.backwall ? 0.3f : 0.1f, 1);
 }

@@ -25,7 +25,7 @@ TextureSet* createTextureSet(xmlNodePtr texSetNode, const char* path);
 void setTexture(TextureSet* texSet, unsigned int textureID, Sprite* tex);
 void setAnimation(TextureSet* texSet, Animation* animation, unsigned int id);
 void setMapIcon(TextureSet* texSet, Sprite* mapIcon);
-void setTexSetColorMod(TextureSet* texSet, SDL_Color* color);
+void setTexSetColorMod(TextureSet* texSet, SDL_Color color);
 
 Sprite* getTexture(TextureSet* texSet, int textureID);
 void texSetFrameReset(TextureSet* texSet);

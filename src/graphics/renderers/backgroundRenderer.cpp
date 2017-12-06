@@ -11,7 +11,7 @@ BackgroundRenderer* createBackgroundRenderer() {
 	return bgRenderer;
 }
 
-void backgroundRendererLoadTextures(BackgroundRenderer* bgRenderer, SDL_Color* skyColor, xmlNodePtr mainNode) {
+void backgroundRendererLoadTextures(BackgroundRenderer* bgRenderer, xmlNodePtr mainNode) {
 	xmlNodePtr texture = mainNode->children;
 	while(texture->type == XML_TEXT_NODE) texture = texture->next;
 
@@ -24,7 +24,7 @@ void backgroundRendererLoadTextures(BackgroundRenderer* bgRenderer, SDL_Color* s
 			bgRenderer->background[index] = new Sprite(filename);
 			auto& sprite = *bgRenderer->background[index];
 			if(index == BG_BIOMES + BIOME_PLAINS || index == BG_BIOMES + BIOME_MOUNTAINS || index == BG_BIOMES + BIOME_OCEAN) {
-				sprite.setColorMod(*skyColor).setClipSize(TERRAIN_WIDTH * BLOC_SIZE / 2, sprite.getExtent().height).setScale(2.5f).setSampling(true);
+				sprite.setClipSize(TERRAIN_WIDTH * BLOC_SIZE / 2, sprite.getExtent().height).setScale(2.5f).setSampling(true);
 			} else {
 				sprite.setFullscreen();
 			}
@@ -46,14 +46,14 @@ void renderBackground(BackgroundRenderer* bgRenderer, Graphics* gfx, int bgID) {
 
 	int offset = 0;
 	switch(bgID) {
-	case BG_BIOMES + BIOME_PLAINS: offset = -4500; break;
-	case BG_BIOMES + BIOME_MOUNTAINS: offset = -2500; break;
-	case BG_BIOMES + BIOME_OCEAN: offset = -4900; break;
+	case BG_BIOMES + BIOME_PLAINS: offset = -45; break;
+	case BG_BIOMES + BIOME_MOUNTAINS: offset = -25; break;
+	case BG_BIOMES + BIOME_OCEAN: offset = -49; break;
 	}
 
 	if(offset != 0) {
 		renderSun(bgRenderer, gfx->cmdBuf, *bgRenderer->levelTime);
-		bg->setPosition(-gfx->viewOrigin.x / 2, offset + gfx->viewOrigin.y / 2);
+		bg->setPosition(0, offset);
 	}
 	bg->draw(gfx->cmdBuf);
 }

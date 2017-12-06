@@ -26,7 +26,7 @@ struct Level {
     bool finished;
 };
 
-Level* initLevel(SDL_Point* viewOrigin);
+Level* initLevel(Vec4* viewOrigin);
 
 ModeUpdateResult updateLevel(Level* level, KeyStates* keyStates);
 SDL_Color getSkyColor(float timeMinutes);

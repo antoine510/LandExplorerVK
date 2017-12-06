@@ -33,10 +33,10 @@ Pipeline::Pipeline(vk::Extent2D extent,
 		.setCullMode(vk::CullModeFlagBits::eBack)
 		.setLineWidth(1.0f);
 
-	auto pipelineColorBlendState = vk::PipelineColorBlendAttachmentState().setColorWriteMask(vk::ColorComponentFlagBits::eR |
-																							 vk::ColorComponentFlagBits::eG |
-																							 vk::ColorComponentFlagBits::eB |
-																							 vk::ColorComponentFlagBits::eA);
+	auto pipelineColorBlendState = vk::PipelineColorBlendAttachmentState(true, vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha, vk::BlendOp::eAdd,
+																		 vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha, vk::BlendOp::eAdd,
+																		 vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
+																		 vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
 	auto pipelineColorBlendCI = vk::PipelineColorBlendStateCreateInfo()
 		.setAttachmentCount(1)
 		.setPAttachments(&pipelineColorBlendState)
@@ -45,7 +45,8 @@ Pipeline::Pipeline(vk::Extent2D extent,
 	vk::Viewport pipelineViewport(0.0f, 0.0f, (float)extent.width, (float)extent.height, 0.0f, 1.0f);
 	vk::Rect2D pipelineScissor(vk::Offset2D(), extent);
 	vk::PipelineViewportStateCreateInfo pipelineViewportCI(vk::PipelineViewportStateCreateFlags(), 1, &pipelineViewport, 1, &pipelineScissor);
-	vk::PipelineDepthStencilStateCreateInfo pipelineDepthStencilCI(vk::PipelineDepthStencilStateCreateFlags(), true, true, vk::CompareOp::eLessOrEqual);
+	//vk::PipelineDepthStencilStateCreateInfo pipelineDepthStencilCI(vk::PipelineDepthStencilStateCreateFlags(), true, true, vk::CompareOp::eLessOrEqual);
+	vk::PipelineDepthStencilStateCreateInfo pipelineDepthStencilCI(vk::PipelineDepthStencilStateCreateFlags(), false);
 	vk::PipelineMultisampleStateCreateInfo pipelineMultisampleCI;
 	vk::GraphicsPipelineCreateInfo pipelineCI(vk::PipelineCreateFlags(), (uint32_t)pipelineShaderStagesCI.size(),
 											  pipelineShaderStagesCI.data(),

@@ -20,6 +20,8 @@ Graphics* initGraphics() {
 	SDL_assert_release(gfx->window != NULL);
 
 	SDL_GetWindowDisplayMode(gfx->window, &myDisplayMode);
+	gfx->viewOrigin = Vec4{0, 0, float(myDisplayMode.w) / BLOC_SIZE, float(myDisplayMode.h) / BLOC_SIZE};
+	gfx->playerRect = NULL;
 
 	VulkanState::setup(gfx->window);
 	gfx->swapchain = new Swapchain(vk::Extent2D(myDisplayMode.w, myDisplayMode.h), vk::PresentModeKHR::eFifo);
@@ -28,10 +30,6 @@ Graphics* initGraphics() {
 	initRenderers(gfx);
 
 	gfx->cmdBuf = VulkanState::device.allocateCommandBuffers(vk::CommandBufferAllocateInfo(VulkanState::cmdPool, vk::CommandBufferLevel::ePrimary, 1u))[0];
-
-	gfx->viewOrigin.x = 0;
-	gfx->viewOrigin.y = 0;
-	gfx->playerRect = NULL;
 
 	return gfx;
 }
@@ -44,7 +42,7 @@ void initRenderers(Graphics* gfx) {
 	initMenuRenderer(&gfx->menuRenderer);
 	initMapRenderer(&gfx->mapRenderer, gfx);
 	gfx->texPack = initTexturePack(gfx);
-	terrainRenderer = new TerrainRenderer(*gfx->swapchain, *gfx->texPack->blocAtlas, *gfx->texPack->backwallAtlas, &gfx->viewOrigin);
+	terrainRenderer = new TerrainRenderer(*gfx->swapchain, *gfx->texPack->blocAtlas, *gfx->texPack->backwallAtlas, gfx->viewOrigin);
 	initEditorRenderer(&gfx->editorRenderer, gfx);
 }
 
@@ -74,7 +72,7 @@ void setDisplayFullscreen(Graphics* gfx, bool fullscreen) {
 }
 
 void renderLevel(Graphics* gfx, Level* level) {
-	gfx->texPack->skyColor = level->skyColor;
+	gfx->texPack->skyColor = colorToVec(level->skyColor);
 
 	Vec2 playerPos = level->entities->collData[level->playerID].pos;
 	int biomeID = getChunckPtr(level->terrain, (Uint32)(playerPos.x / CHUNCK_WIDTH), (Uint32)(playerPos.y / CHUNCK_HEIGHT))->biome;
@@ -82,9 +80,10 @@ void renderLevel(Graphics* gfx, Level* level) {
 
 	updateCamera(gfx);
 
-	terrainRenderer->renderTerrain(gfx->cmdBuf, true);
-	renderEntities(gfx, level->entities);
+	//terrainRenderer->renderTerrain(gfx->cmdBuf, true);
 	terrainRenderer->renderTerrain(gfx->cmdBuf, false);
+	spriteRenderer->bind(gfx->cmdBuf);
+	renderEntities(gfx, level->entities);
 
 	renderPlayerInterface(gfx, level->playerControl);
 }
@@ -98,8 +97,6 @@ void initCamera(Graphics* gfx, Entities* entities) {
 			break;
 		}
 	}
-	gfx->viewOrigin.x = gfx->playerRect->x + gfx->playerRect->w / 2;
-	gfx->viewOrigin.y = gfx->playerRect->y + gfx->playerRect->h / 2;
 	updateCamera(gfx);
 
 	initMapRendererStartPos(&gfx->mapRenderer, gfx);
@@ -107,17 +104,17 @@ void initCamera(Graphics* gfx, Entities* entities) {
 
 void updateCamera(Graphics* gfx) {
 	//gfx->viewOrigin.x = lerp(gfx->viewOrigin.x, gfx->playerRect->x + gfx->playerRect->w/2 - myDisplayMode->w/2, 0.5f);
-	gfx->viewOrigin.x = gfx->playerRect->x + gfx->playerRect->w / 2;
-	gfx->viewOrigin.y = gfx->playerRect->y + gfx->playerRect->h / 2;//lerp(gfx->viewOrigin.y, gfx->playerRect->y + gfx->playerRect->h/2, 0.25f);
+	//gfx->viewOrigin.x = lerp(gfx->viewOrigin.y, gfx->playerRect->y + gfx->playerRect->h/2, 0.25f);
+	gfx->viewOrigin.x = float(gfx->playerRect->x + gfx->playerRect->w / 2 - myDisplayMode.w / 2) / BLOC_SIZE;
+	gfx->viewOrigin.y = float(gfx->playerRect->y + gfx->playerRect->h / 2 - myDisplayMode.h / 2) / BLOC_SIZE;
 
 	//Violent movements should not be interpolated
-	if(abs(gfx->viewOrigin.y - (gfx->playerRect->y + gfx->playerRect->h / 2)) > 2 * BLOC_SIZE)
-		gfx->viewOrigin.y = gfx->playerRect->y + gfx->playerRect->h / 2;		///ALWAYS USED !!! TODO
+	//if(abs(gfx->viewOrigin.y - (gfx->playerRect->y + gfx->playerRect->h / 2)) > 2 * BLOC_SIZE)
+	//	gfx->viewOrigin.y = gfx->playerRect->y + gfx->playerRect->h / 2;		///ALWAYS USED !!! TODO
 
 	//Border conditions
-	if(gfx->viewOrigin.x - myDisplayMode.w / 2 < TERRAIN_BORDER*BLOC_SIZE) { gfx->viewOrigin.x = TERRAIN_BORDER*BLOC_SIZE + myDisplayMode.w / 2; } else if(gfx->viewOrigin.x + myDisplayMode.w / 2 > (TERRAIN_WIDTH - TERRAIN_BORDER)*BLOC_SIZE) { gfx->viewOrigin.x = (TERRAIN_WIDTH - TERRAIN_BORDER)*BLOC_SIZE - myDisplayMode.w / 2; }
-
-	if(gfx->viewOrigin.y - myDisplayMode.h / 2 < TERRAIN_BORDER*BLOC_SIZE) { gfx->viewOrigin.y = TERRAIN_BORDER*BLOC_SIZE + myDisplayMode.h / 2; } else if(gfx->viewOrigin.y + myDisplayMode.h / 2 > (TERRAIN_HEIGHT - TERRAIN_BORDER)*BLOC_SIZE) { gfx->viewOrigin.y = (TERRAIN_HEIGHT - TERRAIN_BORDER)*BLOC_SIZE - myDisplayMode.h / 2; }
+	gfx->viewOrigin.x = std::clamp(gfx->viewOrigin.x, float(TERRAIN_BORDER), TERRAIN_WIDTH - TERRAIN_BORDER - gfx->viewOrigin.z);
+	gfx->viewOrigin.y = std::clamp(gfx->viewOrigin.y, float(TERRAIN_BORDER), TERRAIN_HEIGHT - TERRAIN_BORDER - gfx->viewOrigin.w);
 }
 
 void renderEntities(Graphics* gfx, Entities* entities) {
@@ -126,8 +123,8 @@ void renderEntities(Graphics* gfx, Entities* entities) {
 	for(i = 0; i < ENTITY_COUNT; i++) {
 		if((entities->components[i] & target) == target) {
 			SDL_Rect t = entities->rect[i];
-			t.x -= gfx->viewOrigin.x;
-			t.y = gfx->viewOrigin.y - t.y - t.h;
+			t.x -= int(gfx->viewOrigin.x * BLOC_SIZE);
+			t.y -= int(gfx->viewOrigin.y * BLOC_SIZE);
 			blitEntity(gfx->texPack, gfx->cmdBuf, &entities->gfxData[i], t);
 		}
 	}

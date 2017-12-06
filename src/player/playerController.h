@@ -24,7 +24,7 @@ struct PlayerControl {
     int cursorItemCount;
     Layout* inventoryLayout;
 
-    SDL_Point* viewOrigin;
+	Vec4* viewOrigin;
     float* playerLife;
     int currentWeaponID;
     int direction;
@@ -38,7 +38,7 @@ struct PlayerControl {
     int usingTimerID;
 };
 
-PlayerControl* initPlayerControl(SDL_Point* viewOrigin, Entities* entities, int playerID);
+PlayerControl* initPlayerControl(Vec4* viewOrigin, Entities* entities, int playerID);
 void updateController(KeyStates* keyStates, Level* level, int playerID, PlayerControl* pControl);
 void destroyPlayerControl(PlayerControl* pControl);
 

@@ -35,7 +35,7 @@ struct Graphics {
     CreditsRenderer* creditsRenderer;
     PlayerInterfaceRenderer* playerInterfaceRenderer;
 
-    SDL_Point viewOrigin;
+    Vec4 viewOrigin;
     SDL_Rect* playerRect;
 };
 
@@ -44,7 +44,7 @@ void setDisplaySize(Graphics* gfx, int w, int h);
 void toggleDisplayFullscreen(Graphics* gfx);
 void setDisplayFullscreen(Graphics* gfx, bool fullscreen);
 
-inline void startFrame(Graphics* gfx) { gfx->swapchain->beginCmdBuffer(gfx->cmdBuf); }
+inline void startFrame(Graphics* gfx) { gfx->swapchain->beginCmdBuffer(gfx->cmdBuf, gfx->texPack->skyColor * Vec4(0.77f, 0.9f, 1.0f, 1.0f)); }
 inline void presentFrame(Graphics* gfx) { gfx->swapchain->presentCmdBuffer(gfx->cmdBuf); }
 
 void renderLevel(Graphics* gfx, Level* level);

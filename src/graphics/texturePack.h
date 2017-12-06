@@ -22,7 +22,7 @@ typedef struct TexturePack {
     TextureSet* texSets[MAX_TEXTURESET_COUNT];
     TextureSet* buttonSets[MAX_BUTTONSET_COUNT];
 
-    SDL_Color skyColor;
+	Vec4 skyColor;
 } TexturePack;
 
 

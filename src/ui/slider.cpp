@@ -1,11 +1,12 @@
 #include "slider.h"
 #include <algorithm>
 
-Slider* slider_create(char* name, SDL_Point pos, int value, int min, int max)
+Slider* slider_create(char* name, SDL_Point pos, int value, int min, int max, Vec2 screenOrigin)
 {
     Slider* slider = (Slider*)malloc(sizeof(Slider));
     slider->name = name;
     slider->pos = pos;
+	slider->screenOrigin = screenOrigin;
     slider->value = value;
     slider->max = max;
     slider->min = min;
@@ -16,7 +17,7 @@ Slider* slider_create(char* name, SDL_Point pos, int value, int min, int max)
 void slider_changeValue(Slider* slider, int change)
 {
     slider->value += change;
-	std::clamp(slider->value, slider->min, slider->max);
+	slider->value = std::clamp(slider->value, slider->min, slider->max);
 }
 
 SDL_Rect slider_getMinusRect(Slider* slider)

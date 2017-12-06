@@ -18,7 +18,7 @@ layout (location = 0) out vec2 coordTexture;
 
 void main()
 {
-    gl_Position = vec4(vertexPush.sizeRot * vpos * 2 + vertexPush.position, float(vertexPush.layer), 1.0f);
+	gl_Position = vec4(vertexPush.sizeRot * vpos + vertexPush.position, float(vertexPush.layer) / 10.0f, 1);
 
-    coordTexture = vpos * vertexPush.texCoord.xy + vertexPush.texCoord.zw;
+    coordTexture = vpos * vertexPush.texCoord.zw + vertexPush.texCoord.xy;
 }

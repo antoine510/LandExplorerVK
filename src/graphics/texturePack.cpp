@@ -25,19 +25,19 @@ TexturePack* initTexturePack(Graphics* gfx) {
 			texPack->breakingBloc->setClipSize(BLOC_SIZE, BLOC_SIZE);
 		} else if(checkName(texture, "playerHearth")) {
 			texPack->playerHearth = new Sprite(filename);
+			texPack->playerHearth->setScreenOrigin(1, 0);
 		} else if(checkName(texture, "itemSlot")) {
 			texPack->itemSlot = new Sprite(filename);
 		} else if(checkName(texture, "itemAtlas")) {
 			texPack->itemAtlas = new Sprite(filename);
 			texPack->itemAtlas->setClipSize(TEXTURE_ITEM_SIZE, TEXTURE_ITEM_SIZE);
 		} else if(checkName(texture, "backgroundRenderer")) {
-			backgroundRendererLoadTextures(gfx->bgRenderer, &texPack->skyColor, texture);
+			backgroundRendererLoadTextures(gfx->bgRenderer, texture);
 		} else if(checkName(texture, "menuRenderer")) {
 			menuRendererLoadTextures(&gfx->menuRenderer, texture);
 		} else if(checkName(texture, "texSet")) {
 			if(texSetCount >= MAX_TEXTURESET_COUNT) printf("Error while assigning textureSet, please increase MAX_TEXTURESET_COUNT");
 			texPack->texSets[texSetCount] = createTextureSet(texture, filename.c_str());
-			setTexSetColorMod(texPack->texSets[texSetCount], &texPack->skyColor);
 			texSetCount++;
 		} else if(checkName(texture, "buttonSet")) {
 			if(buttonSetCount >= MAX_BUTTONSET_COUNT) printf("Error while assigning buttonSet, please increase MAX_BUTTONSET_COUNT");
@@ -61,13 +61,13 @@ void blitBreak(TexturePack* texPack, vk::CommandBuffer& cmdBuf, int breakingStep
 void blitMapIcon(TexturePack* texPack, vk::CommandBuffer& cmdBuf, GfxData* gfxData, SDL_Rect rect, float scalingFactor, SDL_Point panningPos) {
 	texPack->texSets[gfxData->texID]->mapIcon->setPosition(
 		(int)((rect.x + rect.w / 2) * scalingFactor / BLOC_SIZE) - panningPos.x,
-		(int)(TERRAIN_HEIGHT * scalingFactor - (rect.y + rect.h / 2) * scalingFactor / BLOC_SIZE) - panningPos.y);
+		(int)((rect.y + rect.h / 2) * scalingFactor / BLOC_SIZE) - panningPos.y);
 	texPack->texSets[gfxData->texID]->mapIcon->draw(cmdBuf);
 }
 
 void blitEntity(TexturePack* texPack, vk::CommandBuffer& cmdBuf, GfxData* gfxData, SDL_Rect rect) {
 	Sprite* s = getTexture(texPack->texSets[gfxData->texID], gfxData->texState);
-	s->setPosition(rect.x, rect.y);
+	s->setPosition(rect.x, rect.y).setColorMod(texPack->skyColor);
 	//setTextureAngle(tex, gfxData->angle);
 	s->draw(cmdBuf);
 }

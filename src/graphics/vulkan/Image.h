@@ -6,6 +6,7 @@
 #include "Buffer.h"
 
 struct SDL_Surface;
+struct SDL_PixelFormat;
 
 class AllocatedImage {
 public:
@@ -54,7 +55,7 @@ class SampledImage : public AllocatedImage {
 public:
 	SampledImage(SDL_Surface* surface);
 	SampledImage(const std::string& path) : SampledImage(loadSurface(path)) {}
-	SampledImage(unsigned int width, unsigned int height, unsigned int pitch = 0);
+	SampledImage(unsigned int width, unsigned int height, unsigned int pitch = 0, vk::Format format = vk::Format::eB8G8R8A8Unorm);
 
 	~SampledImage() {}
 
@@ -66,6 +67,7 @@ public:
 
 protected:
 	static SDL_Surface* loadSurface(const std::string& path);
+	static vk::Format getSurfaceFormat(SDL_PixelFormat* sfmt);
 	AllocatedBuffer createStagingBuffer() const;
 	void uploadPixels(const void* pixels);
 

@@ -25,8 +25,9 @@ typedef struct PerlinNoise2D {
 constexpr int addAbs(int base, int add) { return (base < 0) ? base - add : base + add; }
 inline int exclusive(float x) { return (x >(int)x) ? (int)x : (int)x - 1; }
 inline Uint32 getDistance(Uint32 x1, Uint32 y1, Uint32 x2, Uint32 y2) { return std::abs((int32_t)x2 - (int32_t)x1) + std::abs((int32_t)y2 - (int32_t)y1); }
-SDL_Rect centeredRect(SDL_Rect* base, bool centerW, bool centerH);
+SDL_Rect rectOriginRatio(SDL_Rect base, float rX, float rY);
 SDL_Color modulateColor(SDL_Color* base, float rmod, float gmod, float bmod);
+inline Vec4 colorToVec(SDL_Color c) { return Vec4(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f); }
 
 void clampRect(SDL_Rect* rect, int xmin, int ymin, int xmax, int ymax);
 void clampWorld(Uint16 wTerrain, Uint16 hTerrain, SDL_Rect* rect, int border);

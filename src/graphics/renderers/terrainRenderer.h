@@ -8,7 +8,7 @@
 
 class TerrainRenderer {
 public:
-	TerrainRenderer(Swapchain& swapchain, StagedImage& blocAtlas, StagedImage& backwallAtlas, SDL_Point* viewOrigin);
+	TerrainRenderer(Swapchain& swapchain, StagedImage& blocAtlas, StagedImage& backwallAtlas, const Vec4& viewOrigin);
 	~TerrainRenderer() { DescriptorSet::destroyPool(_pool); DescriptorSet::destroyLayout(_layout); delete _pipeline; }
 
 	void setTerrain(Terrain* terrain);
@@ -28,10 +28,11 @@ private:
 
 	struct PushConstants {
 		glm::vec4 pos;
-		glm::vec3 skyColor;
+		glm::vec3 skyColor = glm::vec3(1, 1, 1);
 		vk::Bool32 backwall;
 	};
 
+	void genGrid();
 	void updateChunck(int xc, int yc, int wc);
 
 	vk::DescriptorSetLayout createLayout();
@@ -45,7 +46,7 @@ private:
 
 	const StagedImage& _blocAtlas, &_backwallAtlas;
 	Terrain* _terrain;
-	SDL_Point* _viewOrigin;
+	const Vec4& _viewOrigin;
 
 	PushConstants _pushConsts;
 	StagedBuffer _blocBuffer;

@@ -36,17 +36,17 @@ void initMapRenderer(MapRenderer* mapRenderer, Graphics* gfx) {
 }
 
 void initMapRendererStartPos(MapRenderer* mapRenderer, Graphics* gfx) {
-	mapRenderer->x = (gfx->viewOrigin.x - myDisplayMode.w / 2) / BLOC_SIZE;
-	mapRenderer->y = (gfx->viewOrigin.y - myDisplayMode.h / 2) / BLOC_SIZE;
-	mapRenderer->x2 = (gfx->viewOrigin.x + myDisplayMode.w / 2) / BLOC_SIZE + 1;
-	mapRenderer->y2 = (gfx->viewOrigin.y + myDisplayMode.h / 2) / BLOC_SIZE + 1;
+	mapRenderer->x = Uint32(gfx->viewOrigin.x);
+	mapRenderer->y = Uint32(gfx->viewOrigin.y);
+	mapRenderer->x2 = Uint32(gfx->viewOrigin.x + gfx->viewOrigin.z) + 1;
+	mapRenderer->y2 = Uint32(gfx->viewOrigin.y + gfx->viewOrigin.w) + 1;
 }
 
 void updateMapRendering(MapRenderer* mapRenderer, Graphics* gfx, Map* mapp, Terrain* terrain) {
-	Uint32 newx = (gfx->viewOrigin.x - myDisplayMode.w / 2) / BLOC_SIZE;
-	Uint32 newy = (gfx->viewOrigin.y - myDisplayMode.h / 2) / BLOC_SIZE;
-	Uint32 newx2 = (gfx->viewOrigin.x + myDisplayMode.w / 2) / BLOC_SIZE + 1;
-	Uint32 newy2 = (gfx->viewOrigin.y + myDisplayMode.h / 2) / BLOC_SIZE + 1;
+	Uint32 newx = Uint32(gfx->viewOrigin.x);
+	Uint32 newy = Uint32(gfx->viewOrigin.y);
+	Uint32 newx2 = Uint32(gfx->viewOrigin.x + gfx->viewOrigin.z) + 1;
+	Uint32 newy2 = Uint32(gfx->viewOrigin.y + gfx->viewOrigin.w) + 1;
 
 	if(newx != mapRenderer->x) {
 		Uint32 xmin = std::min(newx, mapRenderer->x), xmax = std::max(newx, mapRenderer->x);
@@ -113,13 +113,13 @@ void renderMap(MapRenderer* mapRenderer, Graphics* gfx, Map* mapp, Level* level)
 
 	float scaling = (mapp->scalingFactor >= 0) ? (float)(1 << mapp->scalingFactor) : 1.0f / (float)(1 << -mapp->scalingFactor);
 	if(!mapp->mapUpdated) {
-		updateMapRect(mapRenderer, level->terrain, (gfx->viewOrigin.x - myDisplayMode.w / 2) / BLOC_SIZE, (gfx->viewOrigin.y - myDisplayMode.h / 2) / BLOC_SIZE,
-			(gfx->viewOrigin.x + myDisplayMode.w / 2) / BLOC_SIZE, (gfx->viewOrigin.y + myDisplayMode.h / 2) / BLOC_SIZE);
+		updateMapRect(mapRenderer, level->terrain, Uint32(gfx->viewOrigin.x), Uint32(gfx->viewOrigin.y),
+					  Uint32(gfx->viewOrigin.x + gfx->viewOrigin.z), Uint32(gfx->viewOrigin.y + gfx->viewOrigin.w));
 		mapRenderer->buffer->unmapMemory();
 		mapRenderer->mapp->stageBuffer(*mapRenderer->buffer);
 		mapRenderer->mappedBuffer = (Uint32*)mapRenderer->buffer->mapMemory();
-		mapp->panningPos.x = (int)(gfx->viewOrigin.x * scaling / BLOC_SIZE);     //Center the view on the world camera
-		mapp->panningPos.y = (int)(TERRAIN_HEIGHT * scaling - gfx->viewOrigin.y * scaling / BLOC_SIZE);
+		mapp->panningPos.x = (int)((gfx->viewOrigin.x + gfx->viewOrigin.z / 2) * scaling - (myDisplayMode.w >> 1));     //Center the view on the world camera
+		mapp->panningPos.y = (int)((gfx->viewOrigin.y + gfx->viewOrigin.w / 2) * scaling - (myDisplayMode.h >> 1));
 		mapp->mapUpdated = 1;
 	}
 

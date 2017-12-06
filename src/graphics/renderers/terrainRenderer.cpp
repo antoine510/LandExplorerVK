@@ -2,25 +2,27 @@
 #include "graphics/vulkan/Swapchain.h"
 #include "utility/mathUtility.h"
 
-VertexBuffer genGrid(uint8_t w, uint8_t h) {
+void TerrainRenderer::genGrid() {
 	std::vector<uint32_t> res;
-	res.reserve(6u * w * h);
-	for(uint8_t j = 0; j < h; ++j) {
-		for(uint8_t i = 0; i < w; ++i) {
+	res.reserve(6u * gridW * gridH);
+	for(uint8_t j = 0; j < gridH; ++j) {
+		for(uint8_t i = 0; i < gridW; ++i) {
 			uint16_t bloc = i + (j << 8);
-			res.push_back(0x0 + bloc); res.push_back(0x30000 + bloc); res.push_back(0x10000 + bloc);
 			res.push_back(0x0 + bloc); res.push_back(0x20000 + bloc); res.push_back(0x30000 + bloc);
+			res.push_back(0x0 + bloc); res.push_back(0x30000 + bloc); res.push_back(0x10000 + bloc);
 		}
 	}
-	return VertexBuffer((uint32_t)res.size(), 4, vk::Format::eR32Uint);
+	_vBuf.getStagingBuffer().update(res.data());
+	_vBuf.stageBuffer();
+	_vBuf.lock();
 }
 
-TerrainRenderer::TerrainRenderer(Swapchain& swapchain, StagedImage& blocAtlas, StagedImage& backwallAtlas, SDL_Point* viewOrigin) :
+TerrainRenderer::TerrainRenderer(Swapchain& swapchain, StagedImage& blocAtlas, StagedImage& backwallAtlas, const Vec4& viewOrigin) :
 	_blocAtlas(blocAtlas), _backwallAtlas(backwallAtlas), _viewOrigin(viewOrigin),
 	_blocBuffer(4 * TERRAIN_WIDTH * TERRAIN_HEIGHT, vk::BufferUsageFlagBits::eStorageBuffer),
-	_vBuf(genGrid(gridW, gridH)),
+	_vBuf(6u * gridW * gridH, 4, vk::Format::eR32Uint),
 	_blocSet(_pool, _layout), _backwallSet(_pool, _layout) {
-	_vBuf.lock();
+	genGrid();
 	_shaders.emplace_back("terrain", vk::ShaderStageFlagBits::eVertex);
 	_shaders.emplace_back("terrain", vk::ShaderStageFlagBits::eFragment);
 
@@ -30,7 +32,7 @@ TerrainRenderer::TerrainRenderer(Swapchain& swapchain, StagedImage& blocAtlas, S
 	_backwallSet.writeBinding(DescriptorSetBinding(1, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, _backwallAtlas.getImageInfo()));
 
 	_pipeline = new Pipeline(swapchain.getExtent(), _vBuf, vk::PushConstantRange(vk::ShaderStageFlagBits::eAllGraphics, 0u, 32u), _layout, _shaders, swapchain.getRenderPass());
-	_pushConsts.pos = glm::vec4(0, 0, 2.0f * BLOC_SIZE / myDisplayMode.w, 2.0f * BLOC_SIZE / myDisplayMode.h);
+	_pushConsts.pos = glm::vec4(0, 0, 2.0f / viewOrigin.z, 2.0f / viewOrigin.w);
 }
 
 vk::DescriptorSetLayout TerrainRenderer::createLayout() {
@@ -43,7 +45,7 @@ vk::DescriptorSetLayout TerrainRenderer::createLayout() {
 
 void TerrainRenderer::setTerrain(Terrain* terrain) {
 	_terrain = terrain;
-	updateRect(SDL_Rect{0, 0, TERRAIN_WIDTH, TERRAIN_HEIGHT});
+	updateRect(SDL_Rect{TERRAIN_BORDER, TERRAIN_BORDER, TERRAIN_WIDTH - 2 * TERRAIN_BORDER, TERRAIN_HEIGHT - 2 * TERRAIN_BORDER});
 }
 
 void TerrainRenderer::updateRect(SDL_Rect rect) {
@@ -54,11 +56,11 @@ void TerrainRenderer::updateRect(SDL_Rect rect) {
 
 void TerrainRenderer::updateChunck(int xc, int yc, int wc) {
 	std::vector<uint32_t> cdata(gridW * gridH * wc);
-	for(int w = 0; w < wc; ++wc) {
+	for(int w = 0; w < wc; ++w) {
 		for(int y = 0; y < gridH; ++y) {
 			for(int x = 0; x < gridW; ++x) {
-				Bloc* bloc = getBlockPtr(_terrain, (xc + wc) * gridW + x, yc * gridH + y);
-				Bloc* backwall = getBackwallPtr(_terrain, (xc + wc) * gridW + x, yc * gridH + y);
+				Bloc* bloc = getBlockPtr(_terrain, (xc + w) * gridW + x, yc * gridH + y);
+				Bloc* backwall = getBackwallPtr(_terrain, (xc + w) * gridW + x, yc * gridH + y);
 				// Format: 0x00iiBBbb
 				// i = intensity, b = bloc, B = backwall
 				cdata[x + (y + w * gridH) * gridW] = _terrain->blocTypes[bloc->type].getAtlasOffset(_terrain, bloc)
@@ -77,15 +79,15 @@ void TerrainRenderer::renderTerrain(vk::CommandBuffer& cmdBuf, bool backwall) {
 	cmdBuf.bindVertexBuffers(0, (vk::Buffer)_vBuf, (vk::DeviceSize)0);
 
 	_pushConsts.backwall = backwall;
-	int xc = (_viewOrigin->x - myDisplayMode.w / 2) / (gridW * BLOC_SIZE),
-		yc = (_viewOrigin->y - myDisplayMode.h / 2) / (gridH * BLOC_SIZE),
-		xc2 = (_viewOrigin->x + myDisplayMode.w / 2) / (gridW * BLOC_SIZE) + 1,
-		yc2 = (_viewOrigin->y + myDisplayMode.h / 2) / (gridH * BLOC_SIZE) + 1;
+	int xc = int(_viewOrigin.x / gridW),
+		yc = int(_viewOrigin.y / gridH),
+		xc2 = int((_viewOrigin.x + _viewOrigin.z) / gridW) + 1,
+		yc2 = int((_viewOrigin.y + _viewOrigin.w) / gridH) + 1;
 	for(int y = yc; y < yc2; ++y) {
 		for(int x = xc; x < xc2; ++x) {
 			int offset = (x + y * (TERRAIN_WIDTH / gridW)) * gridW * gridH;
-			_pushConsts.pos.x = x * gridW - float(_viewOrigin->x) / BLOC_SIZE;
-			_pushConsts.pos.y = y * gridH - float(_viewOrigin->y) / BLOC_SIZE;
+			_pushConsts.pos.x = x * gridW - _viewOrigin.x;
+			_pushConsts.pos.y = y * gridH - _viewOrigin.y;
 			cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, _pipeline->getLayout(), 0, (vk::DescriptorSet)(backwall ? _backwallSet : _blocSet), 4 * offset);
 			cmdBuf.pushConstants<PushConstants>(_pipeline->getLayout(), vk::ShaderStageFlagBits::eAllGraphics, 0, _pushConsts);
 			cmdBuf.draw(6 * gridW * gridH, 1, 0, 0);

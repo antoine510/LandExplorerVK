@@ -5,7 +5,7 @@
 #include "graphics/displayInfo.h"
 #include "graphics/graphics.h"
 
-static void initSubMenu(SubMenu* subMenu, xmlNodePtr subMenuNode, Vec2 alignment);
+static void initSubMenu(SubMenu* subMenu, xmlNodePtr subMenuNode, Vec2 screenOrigin);
 static void createKeyLabels(SubMenu* submenu, KeyStates* keystates);
 static void updateKeyLabels(SubMenu* submenu, KeyStates* keystates, KeyType type, int index);
 
@@ -18,8 +18,7 @@ Menu* initMenu(KeyStates* keystates) {
 	xmlDocPtr menuDoc = parseXML("ui/menu.xml");
 	xmlNodePtr menuNode = xmlDocGetRootElement(menuDoc);
 
-	//Gets alignment and converts it from [0..1] to [-1..1]
-	Vec2 alignment = Vec2{ asFloatl(menuNode, "Walign")*2.0f - 1.0f, asFloatl(menuNode, "Halign")*2.0f - 1.0f };
+	Vec2 alignment = Vec2{ asFloatl(menuNode, "Walign"), asFloatl(menuNode, "Halign") };
 
 	xmlNodePtr subMenuNode = menuNode->children;
 	while(subMenuNode->type == XML_TEXT_NODE) subMenuNode = subMenuNode->next;
@@ -40,7 +39,7 @@ Menu* initMenu(KeyStates* keystates) {
 	return menu;
 }
 
-void initSubMenu(SubMenu* subMenu, xmlNodePtr subMenuNode, Vec2 alignment) {
+void initSubMenu(SubMenu* subMenu, xmlNodePtr subMenuNode, Vec2 screenOrigin) {
 	subMenu->name = asStringl(subMenuNode, "name");
 	subMenu->layout = layout_create();
 	subMenu->buttonCount = 0;
@@ -51,29 +50,27 @@ void initSubMenu(SubMenu* subMenu, xmlNodePtr subMenuNode, Vec2 alignment) {
 	while(button) {
 		if(checkName(button, "Button")) {
 			int buttonID = asIntl(button, "id");
-			SDL_Rect buttonRect = getRectl(button);		buttonRect.x += (int)(myDisplayMode.w / 2 * alignment.x);	buttonRect.y += (int)(myDisplayMode.h / 2 * alignment.y);
+			SDL_Rect buttonRect = getRectl(button);
 			char* buttonName = asStringl(button, "name");
-			subMenu->buttons[buttonID] = createButton(buttonRect, buttonName);
+			subMenu->buttons[buttonID] = createButton(buttonRect, buttonName, screenOrigin);
 			free(buttonName);
 
-			layout_addElement(subMenu->layout, centeredRect(&buttonRect, false, true), buttonID);
+			layout_addElement(subMenu->layout, rectOriginRatio(buttonRect, 0, 0.5f), buttonID, screenOrigin);
 			subMenu->buttonCount++;
 		} else if(checkName(button, "Slider")) {
 			int sliderID = asIntl(button, "id");
-			SDL_Point pos = getPosl(button); pos.x += (int)(myDisplayMode.w / 2 * alignment.x);	pos.y += (int)(myDisplayMode.h / 2 * alignment.y);
-			subMenu->sliders[sliderID] = slider_create(asStringl(button, "name"), pos, asIntl(button, "value"),
-													   asIntl(button, "min"), asIntl(button, "max"));
+			subMenu->sliders[sliderID] = slider_create(asStringl(button, "name"), getPosl(button), asIntl(button, "value"),
+													   asIntl(button, "min"), asIntl(button, "max"), screenOrigin);
 			SDL_Rect minusRect = slider_getMinusRect(subMenu->sliders[sliderID]);
 			SDL_Rect plusRect = slider_getPlusRect(subMenu->sliders[sliderID]);
-			subMenu->buttons[2 * sliderID] = createButton(minusRect, "-");
-			subMenu->buttons[2 * sliderID + 1] = createButton(plusRect, "+");
-			layout_addElement(subMenu->layout, centeredRect(&minusRect, false, true), subMenu->buttonCount);
-			layout_addElement(subMenu->layout, centeredRect(&plusRect, false, true), subMenu->buttonCount + 1);
+			subMenu->buttons[2 * sliderID] = createButton(minusRect, "-", screenOrigin);
+			subMenu->buttons[2 * sliderID + 1] = createButton(plusRect, "+", screenOrigin);
+			layout_addElement(subMenu->layout, rectOriginRatio(minusRect, 0, 0.5f), subMenu->buttonCount, screenOrigin);
+			layout_addElement(subMenu->layout, rectOriginRatio(plusRect, 0, 0.5f), subMenu->buttonCount + 1, screenOrigin);
 			subMenu->buttonCount += 2;
 		} else if(checkName(button, "Label")) {
 			int labelID = asIntl(button, "id");
-			SDL_Point pos = getPosl(button); pos.x += (int)(myDisplayMode.w / 2 * alignment.x);	pos.y += (int)(myDisplayMode.h / 2 * alignment.y);
-			subMenu->labels[labelID] = label_create(asStringl(button, "text"), pos);
+			subMenu->labels[labelID] = label_create(asStringl(button, "text"), getPosl(button), screenOrigin);
 			subMenu->labelCount++;
 		}
 
@@ -87,8 +84,6 @@ void initSubMenu(SubMenu* subMenu, xmlNodePtr subMenuNode, Vec2 alignment) {
 ModeUpdateResult updateMenu(Menu* menu, KeyStates* keyStates, Graphics* gfx) {
 	int x, y;
 	SDL_GetMouseState(&x, &y);
-	x -= myDisplayMode.w / 2;
-	y = myDisplayMode.h / 2 - y;
 
 	SubMenu* subMenu = &menu->subMenus[menu->currentSubMenu];
 	if(x != menu->oldMousePos.x || y != menu->oldMousePos.y) {
@@ -233,16 +228,16 @@ ModeUpdateResult updateMenu(Menu* menu, KeyStates* keyStates, Graphics* gfx) {
 }
 
 void createKeyLabels(SubMenu* submenu, KeyStates* keystates) {
-	submenu->labels[0] = label_create(keystates_getKeyName(keystates, key_quit), SDL_Point{ submenu->buttons[0]->rect.x + 110, submenu->buttons[0]->rect.y });
-	submenu->labels[1] = label_create(keystates_getKeyName(keystates, key_left), SDL_Point{ submenu->buttons[1]->rect.x + 110, submenu->buttons[1]->rect.y });
-	submenu->labels[2] = label_create(keystates_getKeyName(keystates, key_right), SDL_Point{ submenu->buttons[2]->rect.x + 110, submenu->buttons[2]->rect.y });
-	submenu->labels[3] = label_create(keystates_getKeyName(keystates, key_up), SDL_Point{ submenu->buttons[3]->rect.x + 110, submenu->buttons[3]->rect.y });
-	submenu->labels[4] = label_create(keystates_getKeyName(keystates, key_down), SDL_Point{ submenu->buttons[4]->rect.x + 110, submenu->buttons[4]->rect.y });
-	submenu->labels[5] = label_create(keystates_getKeyName(keystates, key_jump), SDL_Point{ submenu->buttons[5]->rect.x + 160, submenu->buttons[5]->rect.y });
-	submenu->labels[6] = label_create(keystates_getKeyName(keystates, key_select), SDL_Point{ submenu->buttons[6]->rect.x + 160, submenu->buttons[6]->rect.y });
-	submenu->labels[7] = label_create(keystates_getKeyName(keystates, key_map), SDL_Point{ submenu->buttons[7]->rect.x + 160, submenu->buttons[7]->rect.y });
-	submenu->labels[8] = label_create(keystates_getKeyName(keystates, key_editor), SDL_Point{ submenu->buttons[8]->rect.x + 160, submenu->buttons[8]->rect.y });
-	submenu->labels[9] = label_create(keystates_getKeyName(keystates, key_inventory), SDL_Point{ submenu->buttons[9]->rect.x + 160, submenu->buttons[9]->rect.y });
+	submenu->labels[0] = label_create(keystates_getKeyName(keystates, key_quit), SDL_Point{ submenu->buttons[0]->rect.x + 110, submenu->buttons[0]->rect.y }, submenu->buttons[0]->screenOrigin);
+	submenu->labels[1] = label_create(keystates_getKeyName(keystates, key_left), SDL_Point{ submenu->buttons[1]->rect.x + 110, submenu->buttons[1]->rect.y }, submenu->buttons[1]->screenOrigin);
+	submenu->labels[2] = label_create(keystates_getKeyName(keystates, key_right), SDL_Point{ submenu->buttons[2]->rect.x + 110, submenu->buttons[2]->rect.y }, submenu->buttons[2]->screenOrigin);
+	submenu->labels[3] = label_create(keystates_getKeyName(keystates, key_up), SDL_Point{ submenu->buttons[3]->rect.x + 110, submenu->buttons[3]->rect.y }, submenu->buttons[3]->screenOrigin);
+	submenu->labels[4] = label_create(keystates_getKeyName(keystates, key_down), SDL_Point{ submenu->buttons[4]->rect.x + 110, submenu->buttons[4]->rect.y }, submenu->buttons[4]->screenOrigin);
+	submenu->labels[5] = label_create(keystates_getKeyName(keystates, key_jump), SDL_Point{ submenu->buttons[5]->rect.x + 160, submenu->buttons[5]->rect.y }, submenu->buttons[5]->screenOrigin);
+	submenu->labels[6] = label_create(keystates_getKeyName(keystates, key_select), SDL_Point{ submenu->buttons[6]->rect.x + 160, submenu->buttons[6]->rect.y }, submenu->buttons[6]->screenOrigin);
+	submenu->labels[7] = label_create(keystates_getKeyName(keystates, key_map), SDL_Point{ submenu->buttons[7]->rect.x + 160, submenu->buttons[7]->rect.y }, submenu->buttons[7]->screenOrigin);
+	submenu->labels[8] = label_create(keystates_getKeyName(keystates, key_editor), SDL_Point{ submenu->buttons[8]->rect.x + 160, submenu->buttons[8]->rect.y }, submenu->buttons[8]->screenOrigin);
+	submenu->labels[9] = label_create(keystates_getKeyName(keystates, key_inventory), SDL_Point{ submenu->buttons[9]->rect.x + 160, submenu->buttons[9]->rect.y }, submenu->buttons[9]->screenOrigin);
 	submenu->labelCount = 10;
 }
 

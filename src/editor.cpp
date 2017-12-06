@@ -1,7 +1,7 @@
 #include "editor.h"
 #include "utility/mathUtility.h"
 
-Editor* initEditor(SDL_Point* viewOrigin) {
+Editor* initEditor(Vec4* viewOrigin) {
 	Editor* editor = (Editor*)calloc(1, sizeof(Editor));
 
 	editor->viewOrigin = viewOrigin;
@@ -14,7 +14,7 @@ Editor* initEditor(SDL_Point* viewOrigin) {
 ModeUpdateResult updateEditor(Editor* editor, Level* level, KeyStates* keyStates) {
 	int x, y;
 	SDL_GetMouseState(&x, &y);
-	int posx = (editor->viewOrigin->x + x) / BLOC_SIZE, posy = (editor->viewOrigin->y + y) / BLOC_SIZE;
+	int posx = int(editor->viewOrigin->x + float(x) / BLOC_SIZE), posy = int(editor->viewOrigin->y + float(y) / BLOC_SIZE);
 
 	switch(editor->mode) {
 	case VIEWING:

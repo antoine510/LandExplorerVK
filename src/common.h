@@ -4,8 +4,8 @@
 #include <iostream>
 #include <SDL.h>
 
-#define FPS 120
-#define PCPS 120.0f
+#define FPS 60
+#define PCPS 60.0f
 
 #define BLOC_SIZE 16
 #define HALF_BLOC_SIZE 8

@@ -2,11 +2,9 @@
 #include "terrain/terrain.h"
 #include "utility/random.h"
 
-SDL_Rect centeredRect(SDL_Rect* base, bool centerW, bool centerH) {
-	SDL_Rect res = *base;
-	if(centerW) res.x -= res.w / 2;
-	if(centerH) res.y -= res.h / 2;
-	return res;
+SDL_Rect rectOriginRatio(SDL_Rect base, float rX, float rY) {
+	base.x -= int(rX * base.w); base.y -= int(rY * base.h);
+	return base;
 }
 
 SDL_Color modulateColor(SDL_Color* base, float rmod, float gmod, float bmod) {

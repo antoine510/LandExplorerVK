@@ -37,7 +37,7 @@ void AllocatedImage::switchLayout(vk::ImageLayout newLayout, vk::CommandBuffer& 
 		.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
 
 	vk::PipelineStageFlags sourceStage, dstStage;
-	if(_layout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eTransferDstOptimal) {
+	if(newLayout == vk::ImageLayout::eTransferDstOptimal) {
 		memoryBarrier.setDstAccessMask(vk::AccessFlagBits::eTransferWrite);
 		sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
 		dstStage = vk::PipelineStageFlagBits::eTransfer;
@@ -69,15 +69,15 @@ ImageSamplers::ImageSampler::~ImageSampler() {
 	VulkanState::device.destroySampler(*this);
 }
 
-SampledImage::SampledImage(SDL_Surface* surface) : SampledImage(surface->w, surface->h, surface->pitch) {
+SampledImage::SampledImage(SDL_Surface* surface) : SampledImage(surface->w, surface->h, surface->pitch, getSurfaceFormat(surface->format)) {
 	SDL_LockSurface(surface);
 	uploadPixels(surface->pixels);
 	SDL_UnlockSurface(surface);
 	SDL_FreeSurface(surface);
 }
 
-SampledImage::SampledImage(unsigned int width, unsigned int height, unsigned int pitch) :
-	AllocatedImage(vk::ImageCreateInfo(vk::ImageCreateFlags(), vk::ImageType::e2D, vk::Format::eR8G8B8A8Unorm, vk::Extent3D(width, height, 1),
+SampledImage::SampledImage(unsigned int width, unsigned int height, unsigned int pitch, vk::Format format) :
+	AllocatedImage(vk::ImageCreateInfo(vk::ImageCreateFlags(), vk::ImageType::e2D, format, vk::Extent3D(width, height, 1),
 									   1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
 									   vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled), pitch) {}
 
@@ -107,7 +107,8 @@ void SampledImage::stageBuffer(const AllocatedBuffer& buf) {
 }
 
 
-/*vk::Format StagedImage::getSurfaceFormat(SDL_Surface* srf) {
-	format = (srf->format->Rmask == 0x000000ff) ? vk::Format::eR8G8B8A8Unorm : GL_BGRA;
-}*/
+vk::Format SampledImage::getSurfaceFormat(SDL_PixelFormat* sfmt) {
+	SDL_assert(sfmt->BitsPerPixel == 32);
+	return (sfmt->Rmask == 0xff) ? vk::Format::eR8G8B8A8Unorm : vk::Format::eB8G8R8A8Unorm;
+}
 

@@ -11,7 +11,7 @@
 typedef enum EditorMode {VIEWING, SELECTING_MODULE, SELECTING_REFERENCE, SELECTING_ARCHERS, SELECTING_GUARDS, ENTERING_NAME} EditorMode;
 
 typedef struct Editor {
-    SDL_Point* viewOrigin;
+    Vec4* viewOrigin;
 
     EditorMode mode;
     Module* module;
@@ -21,7 +21,7 @@ typedef struct Editor {
     char moduleName[MAX_MODULE_NAME_LENGTH];
 } Editor;
 
-Editor* initEditor(SDL_Point* viewOrigin);
+Editor* initEditor(Vec4* viewOrigin);
 
 ModeUpdateResult updateEditor(Editor* editor, Level* level, KeyStates* keyStates);
 

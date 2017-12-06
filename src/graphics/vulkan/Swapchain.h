@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.hpp>
 #include "Image.h"
 #include "RenderPass.h"
+#include "utility/vector.h"
 
 class Swapchain {
 public:
@@ -12,7 +13,7 @@ public:
 
 	~Swapchain();
 
-	void beginCmdBuffer(vk::CommandBuffer& cmdBuffer);
+	void beginCmdBuffer(vk::CommandBuffer& cmdBuffer, Vec4 clearColor);
 	void presentCmdBuffer(vk::CommandBuffer& cmdBuffer);
 
 	vk::Extent2D getExtent() const { return _extent; }

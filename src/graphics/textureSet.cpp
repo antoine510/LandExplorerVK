@@ -25,11 +25,11 @@ TextureSet* createTextureSet(xmlNodePtr texSetNode, const char* path)
             textureCount++;
         } else if (checkName(texture, "animation")) {
             int frameWidth = asIntl(texture, "frameWidth");
-			stateTex->setClipSize(frameWidth, stateTex->getExtent().width);
+			stateTex->setClipSize(frameWidth, stateTex->getExtent().height);
 
             setTexture(texSet, textureCount, stateTex);
 
-            Animation* anim = initAnimation(textureCount, stateTex->getExtent().height, frameWidth, asIntl(texture, "delay"), asBooll(texture, "loop"));
+            Animation* anim = initAnimation(textureCount, stateTex->getExtent().width, frameWidth, asIntl(texture, "delay"), asBooll(texture, "loop"));
             setAnimation(texSet, anim, animCount);
 
             animCount++;
@@ -64,12 +64,12 @@ void setMapIcon(TextureSet* texSet, Sprite* mapIcon)
     texSet->mapIcon = mapIcon;
 }
 
-void setTexSetColorMod(TextureSet* texSet, SDL_Color* color)
+void setTexSetColorMod(TextureSet* texSet, SDL_Color color)
 {
     int i;
     for(i = 0; i < MAX_TEXTURE_COUNT; i++)
     {
-        if(texSet->textures[i] != NULL) texSet->textures[i]->setColorMod(*color);
+        if(texSet->textures[i] != NULL) texSet->textures[i]->setColorMod(color);
     }
 }
 

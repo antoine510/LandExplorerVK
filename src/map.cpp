@@ -16,13 +16,11 @@ Map* initMap() {
 ModeUpdateResult updateMap(Map* mapp, KeyStates* keyStates) {
 	int x, y;
 	SDL_GetMouseState(&x, &y);
-	x -= myDisplayMode.w / 2;
-	y = myDisplayMode.h / 2 - y;
 
 	if(isKeyHeld(keyStates, key_map)) return MURESULT_LEVEL;
 	int oldScalingFactor = mapp->scalingFactor;
 	mouseWheelIncrement(&mapp->scalingFactor);
-	std::clamp(mapp->scalingFactor, -2, 3);
+	mapp->scalingFactor = std::clamp(mapp->scalingFactor, -2, 3);
 	if(oldScalingFactor != mapp->scalingFactor) {
 		mapp->panning = 0;
 		scaleMap(mapp, mapp->scalingFactor - oldScalingFactor, x, y);

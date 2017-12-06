@@ -68,7 +68,7 @@ void updateSelection(Inventory* inventory)
     int old = inventory->selection;
 
     mouseWheelIncrement(&inventory->selection);
-    std::clamp(inventory->selection, 0, 7);
+	inventory->selection = std::clamp(inventory->selection, 0, 7);
 
     if(inventory->selection != old) soundstack_addSound(SOUND_MENU_TICK);
 }

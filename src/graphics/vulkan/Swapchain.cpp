@@ -55,10 +55,11 @@ Swapchain::~Swapchain() {
 	VulkanState::device.destroySwapchainKHR(_swapchain);
 }
 
-void Swapchain::beginCmdBuffer(vk::CommandBuffer& cmdBuffer) {
+void Swapchain::beginCmdBuffer(vk::CommandBuffer& cmdBuffer, Vec4 clearColor) {
 	_imageIndex = VulkanState::device.acquireNextImageKHR(_swapchain, UINT64_MAX, _hasImage, vk::Fence()).value;
 
-	auto renderPassBeginInfo = vk::RenderPassBeginInfo(_renderPass, _framebuffers[_imageIndex], vk::Rect2D(vk::Offset2D(0, 0), _extent));
+	vk::ClearValue depthClear[2] = {vk::ClearColorValue(std::array<float, 4>{clearColor.r, clearColor.g, clearColor.b, clearColor.a}), vk::ClearDepthStencilValue(1.f, 0)};
+	auto renderPassBeginInfo = vk::RenderPassBeginInfo(_renderPass, _framebuffers[_imageIndex], vk::Rect2D(vk::Offset2D(0, 0), _extent), 2, depthClear);
 
 	cmdBuffer.begin(vk::CommandBufferBeginInfo());
 	cmdBuffer.beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);

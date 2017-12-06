@@ -46,23 +46,21 @@ void renderEditor(Graphics* gfx, Editor* editor) {
 	case VIEWING: break;
 	case SELECTING_MODULE:
 		gfx->editorRenderer.selectModuleTex->setScale(float(editor->selection.w * BLOC_SIZE), float(editor->selection.h * BLOC_SIZE))
-			.setPosition((editor->selection.x + (editor->selection.w > 0 ? 0 : 1)) * BLOC_SIZE - gfx->viewOrigin.x,
-			(editor->selection.y + (editor->selection.h > 0 ? 0 : 1)) * BLOC_SIZE - gfx->viewOrigin.y);
+			.setPositionBloc(editor->selection.x + (editor->selection.w > 0 ? 0 : 1) - gfx->viewOrigin.x, editor->selection.y + (editor->selection.h > 0 ? 0 : 1) - gfx->viewOrigin.y);
 		gfx->editorRenderer.selectModuleTex->draw(gfx->cmdBuf);
 		break;
 	case SELECTING_REFERENCE:
-		gfx->editorRenderer.selectRefTex->setPosition(editor->module->ref.x * BLOC_SIZE - gfx->viewOrigin.x,
-													  editor->module->ref.y * BLOC_SIZE - gfx->viewOrigin.y);
+		gfx->editorRenderer.selectRefTex->setPositionBloc(editor->module->ref.x - gfx->viewOrigin.x, editor->module->ref.y - gfx->viewOrigin.y);
 		gfx->editorRenderer.selectRefTex->draw(gfx->cmdBuf);
 		break;
 	case SELECTING_ARCHERS:
-		gfx->editorRenderer.selectArcherTex->setPosition(editor->module->archerPos[editor->module->archerCount].x * BLOC_SIZE - gfx->viewOrigin.x,
-														 editor->module->archerPos[editor->module->archerCount].y * BLOC_SIZE - gfx->viewOrigin.y);
+		gfx->editorRenderer.selectArcherTex->setPositionBloc(editor->module->archerPos[editor->module->archerCount].x - gfx->viewOrigin.x,
+															 editor->module->archerPos[editor->module->archerCount].y - gfx->viewOrigin.y);
 		gfx->editorRenderer.selectArcherTex->draw(gfx->cmdBuf);
 		break;
 	case SELECTING_GUARDS:
-		gfx->editorRenderer.selectGuardTex->setPosition(editor->module->guardPos[editor->module->guardCount].x * BLOC_SIZE - gfx->viewOrigin.x,
-														editor->module->guardPos[editor->module->guardCount].y * BLOC_SIZE - gfx->viewOrigin.y);
+		gfx->editorRenderer.selectGuardTex->setPositionBloc(editor->module->guardPos[editor->module->guardCount].x - gfx->viewOrigin.x,
+															editor->module->guardPos[editor->module->guardCount].y - gfx->viewOrigin.y);
 		gfx->editorRenderer.selectGuardTex->draw(gfx->cmdBuf);
 		break;
 	case ENTERING_NAME:

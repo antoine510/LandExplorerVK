@@ -1,10 +1,12 @@
 #pragma once
 
+#include "common.h"
 #include "utility/vector.h"
 #include "vulkan/Image.h"
 #include "vulkan/DescriptorSet.h"
 #include "vulkan/Pipeline.h"
 #include "displayInfo.h"
+#include "utility/mathUtility.h"
 
 #include <SDL_ttf.h>
 
@@ -50,16 +52,19 @@ public:
 
 	Sprite& setScale(float scale) { setScreenSize(_realSize * scale); return *this; }
 	Sprite& setScale(float xScale, float yScale) { setScreenSize(_realSize * Vec2(xScale, yScale)); return *this; }
-	Sprite& setFullscreen() { setPosition(0, 0); return *this; }
+	Sprite& setFullscreen() { setPosition(0, 0); setScreenSize(Vec2(myDisplayMode.w, myDisplayMode.h)); return *this; }
 
-	Sprite& setPosition(int posX, int posY) {
-		_pushConsts.pos = Vec2(-1, -1) + 2.f * _screenOrigin + (Vec2(posX, posY) - _realSize * _origin) / Vec2(myDisplayMode.w >> 1, myDisplayMode.h >> 1);
+	Sprite& setPosition(int posX, int posY) { setPosition(Vec2(posX, posY)); return *this; }
+	Sprite& setPositionBloc(float posX, float posY) { setPosition(Vec2(posX * BLOC_SIZE, posY * BLOC_SIZE)); return *this; }
+	Sprite& setPosition(Vec2 pos) {
+		_pushConsts.pos = Vec2(-1, -1) + 2.f * _screenOrigin + (pos - _realSize * _origin) / Vec2(myDisplayMode.w >> 1, myDisplayMode.h >> 1);
 		return *this;
 	}
 	Sprite& setLayer(unsigned int layer) { _pushConsts.layer = layer; }
 
 	Sprite& setOrigin(float rX, float rY) { _origin = Vec2(rX, rY); return *this; }
 	Sprite& setScreenOrigin(float rX, float rY) { _screenOrigin = Vec2(rX, rY); return *this; }
+	Sprite& setScreenOrigin(Vec2 o) { _screenOrigin = o; return *this; }
 
 	Sprite& setClipSize(unsigned int wc, unsigned int hc) {
 		_realSize = Vec2(wc, hc);
@@ -74,12 +79,8 @@ public:
 		return *this;
 	}
 
-	Sprite& setColorMod(const SDL_Color& colorMod) {
-		_pushConsts.colorAlphaMod.r = colorMod.r / 255.0f;
-		_pushConsts.colorAlphaMod.g = colorMod.g / 255.0f;
-		_pushConsts.colorAlphaMod.b = colorMod.b / 255.0f;
-		return *this;
-	}
+	Sprite& setColorMod(SDL_Color colorMod) { _pushConsts.colorAlphaMod = colorToVec(colorMod); return *this; }
+	Sprite& setColorMod(Vec4 colorMod) { _pushConsts.colorAlphaMod = colorMod; return *this; }
 	Sprite& setAlphaMod(float alphaMod) { _pushConsts.colorAlphaMod.a = alphaMod; return *this; }
 
 	Sprite& fillColor(SDL_Color color) {
@@ -99,10 +100,10 @@ private:
 		PushConstants(Vec2 texSize) : sizeRot(texSize.x / (myDisplayMode.w >> 1), 0, 0, texSize.y / (myDisplayMode.h >> 1)) {}
 
 		glm::mat2 sizeRot;
-		glm::vec4 texCoords;
-		glm::vec4 colorAlphaMod;
-		glm::vec2 pos;
-		uint32_t layer;
+		glm::vec4 texCoords = glm::vec4(0, 0, 1, 1);
+		glm::vec4 colorAlphaMod = glm::vec4(1, 1, 1, 1);
+		glm::vec2 pos = glm::vec2(-1, -1);
+		uint32_t layer = 2;
 	};
 
 	DescriptorSet& genDescSet() {

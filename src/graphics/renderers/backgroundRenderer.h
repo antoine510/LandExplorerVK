@@ -20,7 +20,7 @@ typedef struct BackgroundRenderer {
 } BackgroundRenderer;
 
 BackgroundRenderer* createBackgroundRenderer();
-void backgroundRendererLoadTextures(BackgroundRenderer* bgRenderer, SDL_Color* skyColor, xmlNodePtr mainNode);
+void backgroundRendererLoadTextures(BackgroundRenderer* bgRenderer, xmlNodePtr mainNode);
 
 void setBackgroundRendererTime(BackgroundRenderer* bgRenderer, float* levelTime);
 void renderBackground(BackgroundRenderer* bgRenderer, Graphics* gfx, int bgID);

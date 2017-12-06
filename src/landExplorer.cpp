@@ -34,18 +34,11 @@ void initExplorer(LandExplorer* landExplorer)
 
 void mainLoop(LandExplorer* landExplorer)
 {
-	SDL_Event event;
     const int totTime = (1000 / FPS);
     int initTime;
     do
     {
-		while(SDL_PollEvent(&event)) {
-			switch(event.type) {
-			case SDL_QUIT:
-				landExplorer->mode = MURESULT_QUIT;
-				break;
-			}
-		}
+		if(SDL_HasEvent(SDL_QUIT)) landExplorer->mode = MURESULT_QUIT;
 
         initTime = SDL_GetTicks();
 		startFrame(landExplorer->gfx);
@@ -100,7 +93,7 @@ void mainLoop(LandExplorer* landExplorer)
 		presentFrame(landExplorer->gfx);
         sound_playAllSounds(landExplorer->sound);
 
-        SDL_Delay(std::max(0, totTime - (int)SDL_GetTicks() + initTime));
+        //SDL_Delay(std::max(0, totTime - (int)SDL_GetTicks() + initTime));
     } while (!isKeyHeld(&landExplorer->keyStates, key_quit) && landExplorer->mode != MURESULT_QUIT);
 }
 

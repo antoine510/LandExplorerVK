@@ -76,11 +76,11 @@ void updateMenuTextures(MenuRenderer* menuRenderer, Graphics* gfx, Menu* menu) {
 	int i;
 	for(i = 0; i < subMenu->buttonCount; i++) {
 		menuRenderer->buttonTexture[i] = new Sprite(subMenu->buttons[i]->name, menuRenderer->buttonColor, menuRenderer->buttonFont);
-		menuRenderer->buttonTexture[i]->setOrigin(0, 0.5f).setPosition(subMenu->buttons[i]->rect.x, subMenu->buttons[i]->rect.y);
+		menuRenderer->buttonTexture[i]->setScreenOrigin(subMenu->buttons[i]->screenOrigin).setOrigin(0, 0.5f).setPosition(subMenu->buttons[i]->rect.x, subMenu->buttons[i]->rect.y);
 	}
 	for(i = 0; i < subMenu->labelCount; i++) {
 		menuRenderer->labelTexture[i] = new Sprite(subMenu->labels[i].text, menuRenderer->labelColor, menuRenderer->buttonFont);
-		menuRenderer->labelTexture[i]->setOrigin(0, 0.5f).setPosition(subMenu->labels[i].pos.x, subMenu->labels[i].pos.y);
+		menuRenderer->labelTexture[i]->setScreenOrigin(subMenu->labels[i].screenOrigin).setOrigin(0, 0.5f).setPosition(subMenu->labels[i].pos.x, subMenu->labels[i].pos.y);
 	}
 	for(i = 0; i < MAX_MENU_ELEMENT_COUNT; i++) {
 		if(subMenu->sliders[i] != NULL) {
@@ -96,10 +96,10 @@ void updateMenuTextures(MenuRenderer* menuRenderer, Graphics* gfx, Menu* menu) {
 SliderTextures createSliderTextures(Graphics* gfx, Slider* slider, TTF_Font* font, SDL_Color color) {
 	SliderTextures tex;
 	tex.nameTexture = new Sprite(slider->name, color, font);
-	tex.nameTexture->setOrigin(0, 0.5f).setPosition(slider->pos.x, slider->pos.y);
+	tex.nameTexture->setScreenOrigin(slider->screenOrigin).setOrigin(0, 0.5f).setPosition(slider->pos.x, slider->pos.y);
 
 	tex.valueTexture = new Sprite(std::to_string(slider->value), color, font);
-	tex.valueTexture->setOrigin(0, 0.5f).setPosition(slider->pos.x + 370, slider->pos.y);
+	tex.valueTexture->setScreenOrigin(slider->screenOrigin).setOrigin(0, 0.5f).setPosition(slider->pos.x + 370, slider->pos.y);
 
 	return tex;
 }

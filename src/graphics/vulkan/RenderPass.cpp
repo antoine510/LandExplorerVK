@@ -5,14 +5,14 @@ RenderPass::RenderPass(vk::Format colorFormat, vk::Format depthFormat) {
 	std::vector<vk::AttachmentDescription> attachements(2);
 	attachements[0] = vk::AttachmentDescription()
 		.setFormat(colorFormat)
-		.setLoadOp(vk::AttachmentLoadOp::eDontCare)
+		.setLoadOp(vk::AttachmentLoadOp::eClear)	//TODO: No clearing
 		.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
 		.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
 		.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
 
 	attachements[1] = vk::AttachmentDescription()
 		.setFormat(depthFormat)
-		.setLoadOp(vk::AttachmentLoadOp::eDontCare)
+		.setLoadOp(vk::AttachmentLoadOp::eClear)
 		.setStoreOp(vk::AttachmentStoreOp::eDontCare)
 		.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
 		.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)

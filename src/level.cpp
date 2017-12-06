@@ -12,7 +12,7 @@
 
 static void endTriggerFun(void* level);
 
-Level* initLevel(SDL_Point* viewOrigin)
+Level* initLevel(Vec4* viewOrigin)
 {
     Level* level = (Level*)malloc(sizeof(Level));
     level->terrain = initTerrain();
@@ -86,8 +86,8 @@ void endTriggerFun(void* level)
 SDL_Color getSkyColor(float timeMinutes)
 {
     float brightness = 1.5f * sinf(timeMinutes /720 * Constant::pi) + 0.5f;
-    std::clamp(brightness, 0.0f, 1.0f);
-    return SDL_Color{50u + (Uint8)(205*brightness), 76u + (Uint8)(179*brightness), 128u + (Uint8)(127*brightness), 0};
+	brightness = std::clamp(brightness, 0.0f, 1.0f);
+    return SDL_Color{50u + (Uint8)(205*brightness), 76u + (Uint8)(179*brightness), 128u + (Uint8)(127*brightness), 255};
 }
 
 void destroyLevel(Level* level)

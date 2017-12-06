@@ -1,4 +1,5 @@
 #include "layout.h"
+#include "graphics/displayInfo.h"
 
 Layout* layout_create()
 {
@@ -8,8 +9,9 @@ Layout* layout_create()
     return layout;
 }
 
-void layout_addElement(Layout* layout, SDL_Rect rect, int index)
+void layout_addElement(Layout* layout, SDL_Rect rect, int index, Vec2 screenOrigin)
 {
+	rect.x += int(screenOrigin.x * myDisplayMode.w); rect.y += int(screenOrigin.y * myDisplayMode.h);
     layout->elements[layout->elementCount] = LayoutElement{rect, index, true};
     layout->elementCount++;
 }

@@ -11,7 +11,7 @@
 static void activateInventory(PlayerControl* pControl, bool activate);
 static void playerRespawn(Level* level, int playerID);
 
-PlayerControl* initPlayerControl(SDL_Point* viewOrigin, Entities* entities, int playerID)
+PlayerControl* initPlayerControl(Vec4* viewOrigin, Entities* entities, int playerID)
 {
     PlayerControl* pControl = (PlayerControl*)malloc(sizeof(PlayerControl));
     pControl->inventory = initInventory();
@@ -52,8 +52,6 @@ void updateController(KeyStates* keyStates, Level* level, int playerID, PlayerCo
 {
     int x, y;
     SDL_GetMouseState(&x, &y);
-	x -= myDisplayMode.w / 2;
-	y = myDisplayMode.h / 2 - y;
 
     if(pControl->currentWeaponID == -1)
         pControl->direction = (x >= 0) ? 1 : -1;
@@ -105,13 +103,13 @@ void updateController(KeyStates* keyStates, Level* level, int playerID, PlayerCo
 
     if(pControl->isUsing && !timerStack[pControl->usingTimerID].running)
     {
-        int posx = (pControl->viewOrigin->x + x) / BLOC_SIZE, posy = (pControl->viewOrigin->y - y) / BLOC_SIZE;
+		Uint32 posx = Uint32(pControl->viewOrigin->x + float(x) / BLOC_SIZE), posy = Uint32(pControl->viewOrigin->y + float(y) / BLOC_SIZE);
         useCurrentItem(pControl->inventory, level, posx, posy);
         startTimer(&timerStack[pControl->usingTimerID]);
     }
     else if(isHoldMouseLeft())
     {
-        Uint32 posx = (pControl->viewOrigin->x + x) / BLOC_SIZE, posy = (pControl->viewOrigin->y - y) / BLOC_SIZE;
+        Uint32 posx = Uint32(pControl->viewOrigin->x + float(x) / BLOC_SIZE) , posy = Uint32(pControl->viewOrigin->y + float(y) / BLOC_SIZE);
         if(checkBreakable(level->terrain->blocTypes, getBlock(level->terrain, posx, posy)) || (getBackwall(level->terrain, posx, posy).type != 0))
         {
             if(posx != pControl->breakingX || posy != pControl->breakingY)
@@ -146,7 +144,7 @@ void updateController(KeyStates* keyStates, Level* level, int playerID, PlayerCo
     if(frame % (int)PCPS == 0)
     {
         level->entities->status[playerID].HP += HEALTH_REGEN_PER_SECOND;
-        std::clamp(level->entities->status[playerID].HP, 0.0f, MAX_PLAYER_HP);
+		level->entities->status[playerID].HP = std::clamp(level->entities->status[playerID].HP, 0.0f, MAX_PLAYER_HP);
     }
     frame++;
 
