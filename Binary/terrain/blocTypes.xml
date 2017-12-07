@@ -2,59 +2,52 @@
 
 <blockTypes>
 
-	<Bloc id="0" opacity="1" atlasOffset="0">
-		<Transparent transparency="255"/>
-	</Bloc>
+	<Bloc id="0" lightOpacity="1" atlasOffset="0"/>
 	
-	<Bloc id="1" opacity="2" atlasOffset="16">
+	<Bloc id="1" lightOpacity="2" atlasOffset="16">
 		<Solid/>
 		<CustomValueFunction function="edges"/>
 	</Bloc>
 	
-	<Bloc id="2" opacity="3" atlasOffset="32">
+	<Bloc id="2" lightOpacity="3" atlasOffset="32">
 		<Solid/>
 		<CustomValueFunction function="edges"/>
 	</Bloc>
 	
-	<Bloc id="3" opacity="1" atlasOffset="48">
+	<Bloc id="3" lightOpacity="1" atlasOffset="48">
 		<Liquid/>
 		<CustomValueFunction function="liquid"/>
-		<Transparent transparency="64"/>
 	</Bloc>
 	
-	<Bloc id="4" opacity="3" atlasOffset="64">
+	<Bloc id="4" lightOpacity="3" atlasOffset="64">
 		<Solid/>
 		<CustomValueFunction function="edges"/>
 	</Bloc>
 	
-	<Bloc id="5" opacity="2" atlasOffset="80">
+	<Bloc id="5" lightOpacity="2" atlasOffset="80">
 		<Solid/>
 		<CustomValueFunction function="edges"/>
 	</Bloc>
 	
-	<Bloc id="6" opacity="1" atlasOffset="1">
-		<Transparent transparency="0"/>
-	</Bloc>
+	<Bloc id="6" lightOpacity="1" atlasOffset="1"/>
 	
-	<Bloc id="7" opacity="2" atlasOffset="96">
+	<Bloc id="7" lightOpacity="2" atlasOffset="96">
 		<Solid/>
 		<CustomValueFunction function="edges"/>
 	</Bloc>
 	
-	<Bloc id="8" opacity="2" atlasOffset="112">
+	<Bloc id="8" lightOpacity="2" atlasOffset="112">
 		<Solid/>
 		<CustomValueFunction function="edges"/>
 	</Bloc>
 	
-	<Backwall id="0" opacity="1" atlasOffset="0">
+	<Backwall id="0" lightOpacity="1" atlasOffset="0"/>
+
+	<Backwall id="1" lightOpacity="1" atlasOffset="16">
 		<CustomValueFunction function="edges"/>
 	</Backwall>
 	
-	<Backwall id="1" opacity="1" atlasOffset="16">
-		<CustomValueFunction function="edges"/>
-	</Backwall>
-	
-	<Backwall id="2" opacity="1" atlasOffset="32">
+	<Backwall id="2" lightOpacity="1" atlasOffset="32">
 		<CustomValueFunction function="edges"/>
 	</Backwall>
 

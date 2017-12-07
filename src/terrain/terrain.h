@@ -5,17 +5,14 @@
 #include "blockTypes.h"
 #include "bloc.h"
 
-#define TERRAIN_WIDTH 1024
+#define TERRAIN_WIDTH 2048
 #define TERRAIN_HEIGHT 1024
 
 #define TERRAIN_BORDER 16
 #define TERRAIN_BORDER_CHUNCK 1
 
-#define CHUNCK_WIDTH 16
+#define CHUNCK_WIDTH 32
 #define CHUNCK_HEIGHT 16
-
-#define CHUNCK_WIDTH_PX (CHUNCK_WIDTH * BLOC_SIZE)
-#define CHUNCK_HEIGHT_PX (CHUNCK_HEIGHT * BLOC_SIZE)
 
 #define BLOC_NONE 0
 #define BLOC_DIRT 1

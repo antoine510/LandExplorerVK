@@ -47,13 +47,19 @@ void initRenderers(Graphics* gfx) {
 }
 
 void setDisplaySize(Graphics* gfx, int w, int h) {
-	setDisplayFullscreen(gfx, false);
+	//setDisplayFullscreen(gfx, false);
 	if(w != myDisplayMode.w || h != myDisplayMode.h) {
+		presentFrame(gfx);
+		destroyRenderers(gfx);
+		delete gfx->swapchain;
 		SDL_SetWindowSize(gfx->window, w, h);
 		SDL_GetWindowDisplayMode(gfx->window, &myDisplayMode);
-		//glViewport(0, 0, w, h);
-		destroyRenderers(gfx);
+		
+		gfx->viewOrigin = Vec4{0, 0, float(myDisplayMode.w) / BLOC_SIZE, float(myDisplayMode.h) / BLOC_SIZE};
+		gfx->swapchain = new Swapchain(vk::Extent2D(myDisplayMode.w, myDisplayMode.h), vk::PresentModeKHR::eFifo);
 		initRenderers(gfx);
+		startFrame(gfx);
+		spriteRenderer->bind(gfx->cmdBuf);
 	}
 }
 
@@ -80,7 +86,7 @@ void renderLevel(Graphics* gfx, Level* level) {
 
 	updateCamera(gfx);
 
-	//terrainRenderer->renderTerrain(gfx->cmdBuf, true);
+	terrainRenderer->renderTerrain(gfx->cmdBuf, true);
 	terrainRenderer->renderTerrain(gfx->cmdBuf, false);
 	spriteRenderer->bind(gfx->cmdBuf);
 	renderEntities(gfx, level->entities);

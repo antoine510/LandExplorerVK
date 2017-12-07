@@ -37,7 +37,12 @@ void AllocatedImage::switchLayout(vk::ImageLayout newLayout, vk::CommandBuffer& 
 		.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
 
 	vk::PipelineStageFlags sourceStage, dstStage;
-	if(newLayout == vk::ImageLayout::eTransferDstOptimal) {
+	if(_layout == vk::ImageLayout::eShaderReadOnlyOptimal && newLayout == vk::ImageLayout::eTransferDstOptimal) {
+		memoryBarrier.setSrcAccessMask(vk::AccessFlagBits::eShaderRead);
+		memoryBarrier.setDstAccessMask(vk::AccessFlagBits::eTransferWrite);
+		sourceStage = vk::PipelineStageFlagBits::eFragmentShader;
+		dstStage = vk::PipelineStageFlagBits::eTransfer;
+	} else if(newLayout == vk::ImageLayout::eTransferDstOptimal) {
 		memoryBarrier.setDstAccessMask(vk::AccessFlagBits::eTransferWrite);
 		sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
 		dstStage = vk::PipelineStageFlagBits::eTransfer;

@@ -47,14 +47,13 @@ TextureSet* createTextureSet(xmlNodePtr texSetNode, const char* path)
 
 void setTexture(TextureSet* texSet, unsigned int textureID, Sprite* tex)
 {
-    if(textureID >= MAX_TEXTURE_COUNT)  //TODO : SDL_assert
-        printf("Error while assigning texture, please increase MAX_TEXTURE_COUNT");
+	SDL_assert(textureID < MAX_TEXTURE_COUNT);
     texSet->textures[textureID] = tex;
 }
 
 void setAnimation(TextureSet* texSet, Animation* animation, unsigned int id)
 {
-    if(id >= MAX_ANIMATION_COUNT) printf("Error while assigning id, please increase MAX_ANIMATION_COUNT");
+	SDL_assert(id < MAX_ANIMATION_COUNT);
     texSet->animations[id] = animation;
     texSet->animated = 1;
 }

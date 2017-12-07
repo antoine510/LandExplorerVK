@@ -17,7 +17,7 @@
 void checkTerrainCols(Terrain* terrain, Entities* entities);
 void processEntityColls(SAP* sap, Entities* entities);
 
-int entityInBlock(CollisionData* collData, Terrain* terrain, BlocType blockType);
+int entityInLiquid(CollisionData* collData, Terrain* terrain);
 Vec2 processHitDirection(Entities* entities, int masterID, int slaveID);
 float processDistance(Entities* entities, int id1, int id2);
 float processXDistance(Entities* entities, int id1, int id2);

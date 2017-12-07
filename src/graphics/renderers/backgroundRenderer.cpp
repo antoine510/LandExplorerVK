@@ -46,9 +46,9 @@ void renderBackground(BackgroundRenderer* bgRenderer, Graphics* gfx, int bgID) {
 
 	int offset = 0;
 	switch(bgID) {
-	case BG_BIOMES + BIOME_PLAINS: offset = -45; break;
-	case BG_BIOMES + BIOME_MOUNTAINS: offset = -25; break;
-	case BG_BIOMES + BIOME_OCEAN: offset = -49; break;
+	case BG_BIOMES + BIOME_PLAINS: offset = -250; break;
+	case BG_BIOMES + BIOME_MOUNTAINS: offset = -50; break;
+	case BG_BIOMES + BIOME_OCEAN: offset = -50; break;
 	}
 
 	if(offset != 0) {

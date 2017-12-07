@@ -81,6 +81,7 @@ void Swapchain::presentCmdBuffer(vk::CommandBuffer& cmdBuffer) {
 
 	_presentSubmitInfo.setPCommandBuffers(&cmdBuffer);
 	VulkanState::deviceQueue.submit(_presentSubmitInfo, _imageReady);
+	
 
 	VulkanState::device.waitForFences(_imageReady, true, UINT64_MAX);	// TODO: fix this stall
 

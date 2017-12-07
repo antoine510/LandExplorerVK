@@ -63,8 +63,8 @@ void TerrainRenderer::updateChunck(int xc, int yc, int wc) {
 				Bloc* backwall = getBackwallPtr(_terrain, (xc + w) * gridW + x, yc * gridH + y);
 				// Format: 0x00iiBBbb
 				// i = intensity, b = bloc, B = backwall
-				cdata[x + (y + w * gridH) * gridW] = _terrain->blocTypes[bloc->type].getAtlasOffset(_terrain, bloc)
-					+ (_terrain->blocTypes[backwall->type].getAtlasOffset(_terrain, backwall) << 8)
+				cdata[x + (y + w * gridH) * gridW] = _terrain->blocTypes[bloc->type].getProperAtlasOffset(_terrain, bloc)
+					+ (_terrain->blocTypes[backwall->type].getProperAtlasOffset(_terrain, backwall) << 8)
 					+ ((bloc->light << 4) << 16);
 			}
 		}

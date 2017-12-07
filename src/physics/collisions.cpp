@@ -102,14 +102,14 @@ void checkTerrainCols(Terrain* terrain, Entities* entities)
     }
 }
 
-int entityInBlock(CollisionData* collData, Terrain* terrain, BlocType blockType)
+int entityInLiquid(CollisionData* collData, Terrain* terrain)
 {
     int x, y;
     for (x = (int)collData->pos.x; x <= exclusive(collData->pos.x + collData->sz.x); x++)
     {
         for (y = (int)collData->pos.y; y <= exclusive(collData->pos.y + collData->sz.y); y++)
         {
-            if(checkType(terrain->blocTypes, getBlock(terrain, x, y), blockType)) return 1;
+            if(checkLiquid(terrain->blocTypes, getBlock(terrain, x, y))) return 1;
         }
     }
     return 0;

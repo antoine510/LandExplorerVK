@@ -27,14 +27,16 @@ void main() {
 	const uint blocType = terrainBuffer.blocs[bIndex];
 	const uint blocTile = (blocType >> (vertexPush.backwall ? 8 : 0)) & 0xff;
 	uint texU = blocTile & 0xf, texV = blocTile >> 4;
+	uint blocSizeFac = vertexPush.backwall ? 2 : 1;
 	if(right) {
-		xCoord++; texU++;
+		xCoord += blocSizeFac; texU++;
 	}
 	if(down) {
-		yCoord++; texV++;
+		yCoord += blocSizeFac; texV++;
 	}
+	vec2 realCoord = vertexPush.backwall ? vec2(xCoord - 0.5f, yCoord - 0.5f) : vec2(xCoord, yCoord);
 	
 	outUV = vec2(texU, texV) / 16.f;
 	intensity = ((blocType >> 16) & 0xff) / 255.0f;
-	gl_Position = vec4((vec2(xCoord, yCoord) + vertexPush.transform.xy) * vertexPush.transform.zw + vec2(-1, -1), vertexPush.backwall ? 0.3f : 0.1f, 1);
+	gl_Position = vec4((realCoord + vertexPush.transform.xy) * vertexPush.transform.zw + vec2(-1, -1), vertexPush.backwall ? 0.3f : 0.1f, 1);
 }

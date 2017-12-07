@@ -47,11 +47,7 @@ void updateCredits(Credits* credits)
 
 void destroyCredits(Credits* credits)
 {
-    int i;
-    for(i = 0; i < credits->lineCount; i++)
-    {
-        free(credits->lines[i]);
-    }
+    for(int i = 0; i < credits->lineCount; i++) free(credits->lines[i]);
 
     free(credits);
 }

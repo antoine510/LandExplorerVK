@@ -4,6 +4,8 @@
 #include "libxml/parser.h"
 #include "components.h"
 
+#define SKIP_TEXT(nodePtr) while(nodePtr && nodePtr->type == XML_TEXT_NODE) nodePtr = nodePtr->next
+
 xmlDocPtr parseXML(const std::string& filename);
 bool checkName(xmlNodePtr node, const char* name);
 char* asStringl(xmlNodePtr node, const char* attribName);

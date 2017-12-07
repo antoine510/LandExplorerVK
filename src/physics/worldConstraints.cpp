@@ -4,14 +4,13 @@
 
 void applyConstraints(Terrain* terrain, Entities* entities)
 {
-    int i;
     Uint32 target = COMP_COLLIDEABLE + COMP_DYNAMIC + COMP_RECT;
-    for(i = 0; i < ENTITY_COUNT; i++)
+    for(int i = 0; i < ENTITY_COUNT; i++)
     {
         if((entities->components[i] & target) == target)
         {
             Vec2* velocity = &entities->dynData[i].velocity;
-            if(entityInBlock(&entities->collData[i], terrain, BT_LIQUID))
+            if(entityInLiquid(&entities->collData[i], terrain))
             {
                 if(velocity->y < MAX_DOWNWARD_VELOCITY / WATER_DAMPENING) velocity->y += GRAVITY / PCPS / WATER_DAMPENING;
                 velocity->x *= 1.0f - WATER_DAMPENING / PCPS;

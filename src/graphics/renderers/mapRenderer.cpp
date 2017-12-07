@@ -115,9 +115,9 @@ void renderMap(MapRenderer* mapRenderer, Graphics* gfx, Map* mapp, Level* level)
 	if(!mapp->mapUpdated) {
 		updateMapRect(mapRenderer, level->terrain, Uint32(gfx->viewOrigin.x), Uint32(gfx->viewOrigin.y),
 					  Uint32(gfx->viewOrigin.x + gfx->viewOrigin.z), Uint32(gfx->viewOrigin.y + gfx->viewOrigin.w));
-		mapRenderer->buffer->unmapMemory();
+		//mapRenderer->buffer->unmapMemory();
 		mapRenderer->mapp->stageBuffer(*mapRenderer->buffer);
-		mapRenderer->mappedBuffer = (Uint32*)mapRenderer->buffer->mapMemory();
+		//mapRenderer->mappedBuffer = (Uint32*)mapRenderer->buffer->mapMemory();
 		mapp->panningPos.x = (int)((gfx->viewOrigin.x + gfx->viewOrigin.z / 2) * scaling - (myDisplayMode.w >> 1));     //Center the view on the world camera
 		mapp->panningPos.y = (int)((gfx->viewOrigin.y + gfx->viewOrigin.w / 2) * scaling - (myDisplayMode.h >> 1));
 		mapp->mapUpdated = 1;

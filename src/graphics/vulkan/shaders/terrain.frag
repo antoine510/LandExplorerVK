@@ -13,5 +13,5 @@ layout (location = 0) out vec4 outColor;
 
 void main() {
 	vec4 tex = texture(blocSampler, inUV);
-	outColor = vec4(tex.rgb * fragPush.skyColor * intensity, tex.a);
+	outColor = vec4(tex.rgb * fragPush.skyColor * intensity, tex.a * (2 - intensity));
 }
