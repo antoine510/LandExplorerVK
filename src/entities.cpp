@@ -85,15 +85,16 @@ void updateWeapon(Entities* entities, int id, PlayerControl* pControl)
         entities->weaponData[id].lifetime++;
         float centerX = entities->collData[parentID].pos.x + entities->collData[parentID].sz.x / 2;
         float centerY = entities->collData[parentID].pos.y + entities->collData[parentID].sz.y / 3;
-		float angle = pControl->direction * 240.0f * entities->weaponData[id].lifetime / PCPS;
+		float angle = 135.0f - pControl->direction * (240.0f * entities->weaponData[id].lifetime / PCPS + 20.0f);
 
-        float x = cosf(Constant::deg2rad(angle))*3.0f + centerX, y = sinf(Constant::deg2rad(angle))*3.0f + centerY;
+		float x = std::cos(Constant::deg2rad(angle - 45.0f)) * 0.8f + centerX;
+		float y = -std::sin(Constant::deg2rad(angle - 45.0f)) * 0.8f + centerY;
 	
-        entities->collData[id].pos.x = x;
-        entities->collData[id].pos.y = y;
-		entities->gfxData[id].angle = -angle +45.0f;
-        entities->rect[id].x = (int)(centerX*BLOC_SIZE);
-        entities->rect[id].y = (int)(centerY*BLOC_SIZE);
+        entities->collData[id].pos.x = std::cos(Constant::deg2rad(angle - 45.0f)) * 2.5f + centerX;
+        entities->collData[id].pos.y = -std::sin(Constant::deg2rad(angle - 45.0f)) * 2.5f + centerY;
+		entities->gfxData[id].angle = angle;
+        entities->rect[id].x = (int)(x*BLOC_SIZE);
+        entities->rect[id].y = (int)(y*BLOC_SIZE);
         if(entities->weaponData[id].lifetime > 0.5f * PCPS)
         {
             destroyEntity(entities, id);
@@ -101,10 +102,7 @@ void updateWeapon(Entities* entities, int id, PlayerControl* pControl)
         }
     } else if (entities->weaponData[id].type == weapon_arrow) {
         Vec2 v = glm::normalize(entities->dynData[id].velocity);
-
-        float angle = (v.y >= 0) ? 360.0f - Constant::rad2deg(acosf(v.x)) : Constant::rad2deg(acosf(v.x));
-
-        entities->gfxData[id].angle = angle - 90.0f;
+        entities->gfxData[id].angle = (v.y >= 0) ? 360.0f - Constant::rad2deg(acosf(v.x)) : Constant::rad2deg(acosf(v.x));
     }
 }
 

@@ -46,14 +46,14 @@ void renderBackground(BackgroundRenderer* bgRenderer, Graphics* gfx, int bgID) {
 
 	int offset = 0;
 	switch(bgID) {
-	case BG_BIOMES + BIOME_PLAINS: offset = -250; break;
-	case BG_BIOMES + BIOME_MOUNTAINS: offset = -50; break;
-	case BG_BIOMES + BIOME_OCEAN: offset = -50; break;
+	case BG_BIOMES + BIOME_PLAINS: offset = 2000; break;
+	case BG_BIOMES + BIOME_MOUNTAINS: offset = 2100; break;
+	case BG_BIOMES + BIOME_OCEAN: offset = 2250; break;
 	}
 
 	if(offset != 0) {
 		renderSun(bgRenderer, gfx->cmdBuf, *bgRenderer->levelTime);
-		bg->setPosition(0, offset);
+		bg->setColorMod(gfx->texPack->skyColor).setPosition(-gfx->viewOrigin.x * 8.0f, offset - gfx->viewOrigin.y * 5.f);
 	}
 	bg->draw(gfx->cmdBuf);
 }

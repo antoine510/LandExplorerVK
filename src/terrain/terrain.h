@@ -5,29 +5,6 @@
 #include "blockTypes.h"
 #include "bloc.h"
 
-#define TERRAIN_WIDTH 2048
-#define TERRAIN_HEIGHT 1024
-
-#define TERRAIN_BORDER 16
-#define TERRAIN_BORDER_CHUNCK 1
-
-#define CHUNCK_WIDTH 32
-#define CHUNCK_HEIGHT 16
-
-#define BLOC_NONE 0
-#define BLOC_DIRT 1
-#define BLOC_ROCK 2
-#define BLOC_WATER 3
-#define BLOC_BRICK 4
-#define BLOC_WOOD 5
-#define BLOC_TORCH 6
-#define BLOC_GRASS 7
-#define BLOC_SAND 8
-
-#define BACKWALL_NONE 0
-#define BACKWALL_DIRT 1
-#define BACKWALL_ROCK 2
-
 typedef struct Chunck {
 	LightSource* lights;
 	Uint8 lightCount;
@@ -58,46 +35,37 @@ void saveTerrain(Terrain* terrain);
 void loadTerrain(Terrain* terrain);
 void destroyTerrain(Terrain* terrain);
 
-Uint32 getBlockIndex(Uint32 x, Uint32 y);
-Bloc getBlock(Terrain* terrain, Uint32 x, Uint32 y);
-Bloc getBackwall(Terrain* terrain, Uint32 x, Uint32 y);
-Bloc* getBlockPtr(Terrain* terrain, Uint32 x, Uint32 y);
-Bloc* getBackwallPtr(Terrain* terrain, Uint32 x, Uint32 y);
-void getBlocCoordinatesFromPointer(Terrain* terrain, Bloc* bloc, Uint32* x, Uint32* y);
-Uint8 getBlockOpacity(Terrain* terrain, Uint32 x, Uint32 y);
-bool isNaturalLightSource(Terrain* terrain, Uint32 x, Uint32 y);
+constexpr Uint32 getBlockIndex(Uint32 x, Uint32 y) { return x + y * TERRAIN_WIDTH; }
+inline Bloc getBlock(Terrain* terrain, Uint32 x, Uint32 y) { return terrain->blocks[getBlockIndex(x, y)]; }
+inline Bloc getBackwall(Terrain* terrain, Uint32 x, Uint32 y) { return terrain->backwall[getBlockIndex(x, y)]; }
+inline Bloc* getBlockPtr(Terrain* terrain, Uint32 x, Uint32 y) { return terrain->blocks + getBlockIndex(x, y); }
+inline Bloc* getBackwallPtr(Terrain* terrain, Uint32 x, Uint32 y) { return terrain->backwall + getBlockIndex(x, y); }
 
-void setBlock(Terrain* terrain, Uint32 x, Uint32 y, Bloc value);
-void setBackwall(Terrain* terrain, Uint32 x, Uint32 y, Bloc value);
+void getBlocCoordinatesFromPointer(Terrain* terrain, Bloc* bloc, Uint32* x, Uint32* y);
+inline Uint8 getBlockOpacity(Terrain* terrain, Uint32 x, Uint32 y) {
+	return getBlock(terrain, x, y).type ? terrain->blocTypes[getBlock(terrain, x, y).type].opacity : terrain->blocTypes[getBackwall(terrain, x, y).type + BACKWALL_TYPES_OFFSET].opacity;
+}
+inline bool isNaturalLightSource(Terrain* terrain, Uint32 x, Uint32 y) { return (getBlock(terrain, x, y).type == 0) && (getBackwall(terrain, x, y).type == 0); }
+
 void setLightRect(Terrain* terrain, SDL_Rect rect, Uint8 value);
 
-int isTerrainEmpty(Terrain* terrain, SDL_Rect rect);
-int isTerrainChunckEmpty(Terrain* terrain, int x, int y);
-int isTerrainBlack(Terrain* terrain, SDL_Rect rect);
-int isTerrainChunckBlack(Terrain* terrain, int x, int y);
-int getTerrainHeight(Terrain* terrain, int x);
-SDL_Rect getChunckRect(SDL_Rect* blocRect);
-
-Bloc* getBlocUp(Bloc* bloc);
-Bloc* getBlocDown(Bloc* bloc);
-Bloc* getBlocLeft(Bloc* bloc);
-Bloc* getBlocRight(Bloc* bloc);
-Chunck* getChunckUp(Chunck* chunck);
-Chunck* getChunckDown(Chunck* chunck);
-Chunck* getChunckLeft(Chunck* chunck);
-Chunck* getChunckRight(Chunck* chunck);
+inline int getTerrainHeight(Terrain* terrain, int x, int yHint = TERRAIN_BORDER) {
+	while(getBlock(terrain, x, yHint).type == 0 && yHint < TERRAIN_HEIGHT - TERRAIN_BORDER) yHint++;
+	return yHint - 1;
+}
 
 Uint8 getBlocCustomValue(Terrain* terrain, Uint32 x, Uint32 y);
 void setBlocCustomValue(Terrain* terrain, Uint32 x, Uint32 y, Uint8 customValue);
 void checkChunckCustomValuesUnneeded(Terrain* terrain, Uint32 xChunck, Uint32 yChunck);
-Uint8 getBlocEdges(Terrain* terrain, Bloc* bloc);
+inline Uint8 getBlocEdges(Terrain* terrain, Bloc* bloc) { return (bloc->left()->type == 0) * 8 + (bloc->right()->type == 0) * 4 + (bloc->down()->type == 0) * 2 + (bloc->up()->type == 0); }
 Uint8 getLiquidCustomValue(Terrain* terrain, Bloc* bloc);
 
-Uint32 getBlocIDWithinChunck(Uint32 x, Uint32 y);
-Uint32 getBlocChunck(Uint32 x, Uint32 y);   //x and y are the BLOC's coordinates
-ChunckCoords getBlocChunckCoords(Uint32 x, Uint32 y);
-Uint32 getChunck(Uint32 x, Uint32 y);
-Chunck* getChunckPtr(Terrain* terrain, Uint32 x, Uint32 y);
+inline Uint32 getBlocChunck(Uint32 x, Uint32 y) { return x / CHUNCK_SIZE + y / CHUNCK_SIZE * (TERRAIN_WIDTH / CHUNCK_SIZE); }
+inline ChunckCoords getBlocChunckCoords(Uint32 x, Uint32 y) { return ChunckCoords{Uint16(x / CHUNCK_SIZE), Uint16(y / CHUNCK_SIZE)}; }
+
+inline Uint32 getBlocIDWithinChunck(Uint32 x, Uint32 y) { return (x % CHUNCK_SIZE) + (y % CHUNCK_SIZE) * CHUNCK_SIZE; }
+inline Uint32 getChunck(Uint32 x, Uint32 y) { return x + y * (TERRAIN_WIDTH / CHUNCK_SIZE); }
+inline Chunck* getChunckPtr(Terrain* terrain, Uint32 x, Uint32 y) { return &terrain->chuncks[getChunck(x, y)]; }
 void destroyChuncks(Terrain* terrain);
 
 class TerrainRenderer;

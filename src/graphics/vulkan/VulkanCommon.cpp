@@ -39,10 +39,10 @@ void VulkanState::setup(SDL_Window* window) {
 	std::vector<const char*> extensions(extCount), layers;
 
 	SDL_Vulkan_GetInstanceExtensions(window, &extCount, extensions.data());
-//#ifdef _DEBUG
+#ifdef _DEBUG
 	extensions.push_back("VK_EXT_debug_report");
 	layers.push_back("VK_LAYER_LUNARG_standard_validation");
-//#endif // DEBUG
+#endif // DEBUG
 
 	vk::ApplicationInfo appInfo("VulkanTest", 1, "CustomEngine", 1, VK_API_VERSION_1_0);
 	vk::InstanceCreateInfo instCreateInfo(vk::InstanceCreateFlags(), &appInfo,
@@ -50,11 +50,11 @@ void VulkanState::setup(SDL_Window* window) {
 										  (uint32_t)extensions.size(), extensions.data());
 	inst = vk::createInstance(instCreateInfo);
 
-//#ifdef _DEBUG
+#ifdef _DEBUG
 	vk::DebugReportCallbackCreateInfoEXT debugInfo(vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::eWarning, debugCB);
 	auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)inst.getProcAddr("vkCreateDebugReportCallbackEXT");
 	VKassert_always(vkCreateDebugReportCallbackEXT(inst, &(VkDebugReportCallbackCreateInfoEXT)debugInfo, nullptr, &debugCallback));
-//#endif // DEBUG
+#endif // DEBUG
 
 	VkSurfaceKHR cWindowKHR = nullptr;
 	SDL_assert_always(SDL_Vulkan_CreateSurface(window, inst, &cWindowKHR));
@@ -81,8 +81,6 @@ void VulkanState::setup(SDL_Window* window) {
 	std::vector<const char*> deviceExtensions;
 	deviceExtensions.push_back("VK_KHR_swapchain");
 
-	//auto gpuFeatures = vk::PhysicalDeviceFeatures().setSamplerAnisotropy(true);
-
 	auto deviceCreateInfo = vk::DeviceCreateInfo()
 		.setQueueCreateInfoCount(1)
 		.setPQueueCreateInfos(&queueCreateInfo)
@@ -102,10 +100,10 @@ void VulkanState::teardown() {
 	device.destroyCommandPool(cmdPoolTransient);
 	device.destroy();
 
-//#ifdef _DEBUG
+#ifdef _DEBUG
 	auto vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)inst.getProcAddr("vkDestroyDebugReportCallbackEXT");
 	vkDestroyDebugReportCallbackEXT(inst, debugCallback, nullptr);
-//#endif // DEBUG
+#endif // DEBUG
 
 	inst.destroy();
 }

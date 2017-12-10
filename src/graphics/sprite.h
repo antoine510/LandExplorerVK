@@ -61,6 +61,13 @@ public:
 		return *this;
 	}
 	Sprite& setLayer(unsigned int layer) { _pushConsts.layer = layer; }
+	Sprite& setRotation(float angle) {
+		float cos = std::cos(Constant::deg2rad(angle)), sin = std::sin(Constant::deg2rad(angle));
+		_pushConsts.sizeRot[0][1] = _realSize.x * 2 * -sin / myDisplayMode.h;
+		_pushConsts.sizeRot[1][0] = _realSize.y * 2 * sin / myDisplayMode.w;
+		setScreenSize(_realSize * cos);
+		return *this;
+	}
 
 	Sprite& setOrigin(float rX, float rY) { _origin = Vec2(rX, rY); return *this; }
 	Sprite& setScreenOrigin(float rX, float rY) { _screenOrigin = Vec2(rX, rY); return *this; }

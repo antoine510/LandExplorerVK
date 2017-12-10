@@ -68,7 +68,7 @@ void blitMapIcon(TexturePack* texPack, vk::CommandBuffer& cmdBuf, GfxData* gfxDa
 void blitEntity(TexturePack* texPack, vk::CommandBuffer& cmdBuf, GfxData* gfxData, SDL_Rect rect) {
 	Sprite* s = getTexture(texPack->texSets[gfxData->texID], gfxData->texState);
 	s->setPosition(rect.x, rect.y).setColorMod(texPack->skyColor);
-	//setTextureAngle(tex, gfxData->angle);
+	if(gfxData->angle != 0.0f) s->setRotation(gfxData->angle);
 	s->draw(cmdBuf);
 }
 

@@ -13,8 +13,6 @@
 
 void generateTerrain(Level* level);
 
-void processChunckConditions(Terrain* terrain, SDL_Rect rect);
-
 void processExistingLightIntensity(Terrain* terrain, SDL_Rect rect);
 void processSunLightAroundBloc(Terrain* terrain, int x, int y);
 void processSunLightAroundRect(Terrain* terrain, SDL_Rect rect);

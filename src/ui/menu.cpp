@@ -165,7 +165,7 @@ ModeUpdateResult updateMenu(Menu* menu, KeyStates* keyStates, Graphics* gfx) {
 				setDisplaySize(gfx, 800, 600);
 				break;
 			case 3:
-				toggleDisplayFullscreen(gfx);
+				setDisplaySize(gfx, 0, 0, true);
 				break;
 			case 4:
 				menu->currentSubMenu = SUBMENU_OPTIONS;

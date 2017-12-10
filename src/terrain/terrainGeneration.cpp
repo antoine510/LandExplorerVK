@@ -70,11 +70,11 @@ void generateTerrain(Level* level)
         {
             getChunckPtr(terrain, i, j)->biome = BIOME_OCEAN;
         }
-        for(i = BIOMEGEN_OCEAN_LIMIT; i < (PLAINS_LIMIT + PLAINS_TRANSITION_LENGTH) / CHUNCK_WIDTH; i++)
+        for(i = BIOMEGEN_OCEAN_LIMIT; i < (PLAINS_LIMIT + PLAINS_TRANSITION_LENGTH) / CHUNCK_SIZE; i++)
         {
             getChunckPtr(terrain, i, j)->biome = BIOME_PLAINS;
         }
-        for(i = (PLAINS_LIMIT + PLAINS_TRANSITION_LENGTH) / CHUNCK_WIDTH; i < terrain->widthChunck - BIOMEGEN_OCEAN_LIMIT; i++)
+        for(i = (PLAINS_LIMIT + PLAINS_TRANSITION_LENGTH) / CHUNCK_SIZE; i < terrain->widthChunck - BIOMEGEN_OCEAN_LIMIT; i++)
         {
             getChunckPtr(terrain, i, j)->biome = BIOME_MOUNTAINS;
         }
@@ -108,7 +108,6 @@ void generateTerrain(Level* level)
 
     SDL_Rect allChuncks = {0, 0, terrain->widthChunck, terrain->heightChunck};
     clampWorldChunck(terrain->widthChunck, terrain->heightChunck, &allTerrain, TERRAIN_BORDER_CHUNCK);
-    processChunckConditions(terrain, allChuncks);
 
     #ifdef PERFLOG
     printf("Terrain processing : %d\n", SDL_GetTicks() - t);
@@ -169,19 +168,6 @@ void processBlockConditions(Terrain* terrain, SDL_Rect rect)
     }
 }
 
-void processChunckConditions(Terrain* terrain, SDL_Rect rect)
-{
-    int i, j;
-    for(i = rect.x; i < rect.x + rect.w; i++)
-    {
-        for(j = rect.y; j < rect.y + rect.h; j++)
-        {
-            getChunckPtr(terrain, i, j)->black = (j < TERRAINGEN_UNDERGROUND_LIMIT*terrain->height) ? isTerrainChunckBlack(terrain, i, j) : true;
-            getChunckPtr(terrain, i, j)->empty = isTerrainChunckEmpty(terrain, i, j);
-        }
-    }
-}
-
 void processExistingLightIntensity(Terrain* terrain, SDL_Rect rect)
 {
     int i, j;
@@ -218,8 +204,6 @@ void processSunLightAroundRect(Terrain* terrain, SDL_Rect rect)
     SDL_Rect reprocess = {rect.x-MAX_BLOC_LIGHT-1, rect.y-MAX_BLOC_LIGHT-1, 2*MAX_BLOC_LIGHT + rect.w+2, 2*MAX_BLOC_LIGHT + rect.h+2};
     setLightRect(terrain, black, 0);
     processExistingLightIntensity(terrain, reprocess);
-
-    processChunckConditions(terrain, getChunckRect(&black));
 
     //updateRect(chunckRenderer, black);  //Graphical update
 }
@@ -343,8 +327,6 @@ void breakBloc(Terrain* terrain, WaterManager* waterManager, Uint32 x, Uint32 y)
     SDL_Rect t = {int(x - MAX_BLOC_LIGHT), int(y - MAX_BLOC_LIGHT), 2*MAX_BLOC_LIGHT+1, 2*MAX_BLOC_LIGHT+1};
     clampWorld(terrain->width, terrain->height, &t, TERRAIN_BORDER);
 
-    processChunckConditions(terrain, getChunckRect(&t));
-
 	terrainRenderer->updateRect(t);  //Graphical update
 }
 
@@ -364,8 +346,6 @@ void placeBloc(Terrain* terrain, Uint32 x, Uint32 y, Uint32 type)
 
     SDL_Rect t = {int(x - MAX_BLOC_LIGHT), int(y - MAX_BLOC_LIGHT), 2*MAX_BLOC_LIGHT+1, 2*MAX_BLOC_LIGHT+1};
     clampWorld(terrain->width, terrain->height, &t, TERRAIN_BORDER);
-
-    processChunckConditions(terrain, getChunckRect(&t));
 
 	terrainRenderer->updateRect(t);
 

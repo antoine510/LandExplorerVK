@@ -14,9 +14,8 @@ SpriteRenderer* spriteRenderer = nullptr;
 
 Graphics* initGraphics() {
 	Graphics* gfx = (Graphics*)malloc(sizeof(Graphics));
-	SDL_assert_release(gfx != NULL);
 
-	gfx->window = SDL_CreateWindow("Land Explorer", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_VULKAN);
+	gfx->window = SDL_CreateWindow("Land Explorer", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1920, 1080, SDL_WINDOW_VULKAN);
 	SDL_assert_release(gfx->window != NULL);
 
 	SDL_GetWindowDisplayMode(gfx->window, &myDisplayMode);
@@ -46,13 +45,21 @@ void initRenderers(Graphics* gfx) {
 	initEditorRenderer(&gfx->editorRenderer, gfx);
 }
 
-void setDisplaySize(Graphics* gfx, int w, int h) {
-	//setDisplayFullscreen(gfx, false);
+void setDisplaySize(Graphics* gfx, int w, int h, bool fullscreen) {
 	if(w != myDisplayMode.w || h != myDisplayMode.h) {
 		presentFrame(gfx);
 		destroyRenderers(gfx);
 		delete gfx->swapchain;
-		SDL_SetWindowSize(gfx->window, w, h);
+
+		if(fullscreen) {
+			SDL_DisplayMode mode;
+			SDL_GetDesktopDisplayMode(0, &mode);
+			SDL_SetWindowSize(gfx->window, mode.w, mode.h);
+			SDL_SetWindowFullscreen(gfx->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+		} else {
+			SDL_SetWindowFullscreen(gfx->window, 0);
+			SDL_SetWindowSize(gfx->window, w, h);
+		}
 		SDL_GetWindowDisplayMode(gfx->window, &myDisplayMode);
 		
 		gfx->viewOrigin = Vec4{0, 0, float(myDisplayMode.w) / BLOC_SIZE, float(myDisplayMode.h) / BLOC_SIZE};
@@ -63,29 +70,16 @@ void setDisplaySize(Graphics* gfx, int w, int h) {
 	}
 }
 
-void toggleDisplayFullscreen(Graphics* gfx) {
-	bool fullscreen = !(SDL_GetWindowFlags(gfx->window) & SDL_WINDOW_FULLSCREEN_DESKTOP);
-	setDisplayFullscreen(gfx, fullscreen);
-}
-
-void setDisplayFullscreen(Graphics* gfx, bool fullscreen) {
-	if(fullscreen) {
-		SDL_DisplayMode mode;
-		SDL_GetDesktopDisplayMode(0, &mode);
-		setDisplaySize(gfx, mode.w, mode.h);
-	}
-	SDL_SetWindowFullscreen(gfx->window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
-}
-
 void renderLevel(Graphics* gfx, Level* level) {
 	gfx->texPack->skyColor = colorToVec(level->skyColor);
 
 	Vec2 playerPos = level->entities->collData[level->playerID].pos;
-	int biomeID = getChunckPtr(level->terrain, (Uint32)(playerPos.x / CHUNCK_WIDTH), (Uint32)(playerPos.y / CHUNCK_HEIGHT))->biome;
+	int biomeID = getChunckPtr(level->terrain, (Uint32)(playerPos.x / CHUNCK_SIZE), (Uint32)(playerPos.y / CHUNCK_SIZE))->biome;
 	renderBackground(gfx->bgRenderer, gfx, BG_BIOMES + biomeID);
 
 	updateCamera(gfx);
 
+	terrainRenderer->setSkyColor(gfx->texPack->skyColor);
 	terrainRenderer->renderTerrain(gfx->cmdBuf, true);
 	terrainRenderer->renderTerrain(gfx->cmdBuf, false);
 	spriteRenderer->bind(gfx->cmdBuf);

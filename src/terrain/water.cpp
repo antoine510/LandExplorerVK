@@ -40,20 +40,20 @@ void waterman_update(WaterManager* waterman, Terrain* terrain)
         chunckGroupCount = processContinuousActiveChuncks(waterman->activeChuncks, waterman->activeChunckCount, chunckGroupStart);
         bool cont = false;
 
-        Uint32 xb = waterman->activeChuncks[chunckGroupStart].x * CHUNCK_WIDTH;
-        Uint32 yb = waterman->activeChuncks[chunckGroupStart].y * CHUNCK_HEIGHT;
+        Uint32 xb = waterman->activeChuncks[chunckGroupStart].x * CHUNCK_SIZE;
+        Uint32 yb = waterman->activeChuncks[chunckGroupStart].y * CHUNCK_SIZE;
         Uint32 x, y;
 
-        for(y = yb + CHUNCK_HEIGHT-1; y >= yb; y--)
+        for(y = yb + CHUNCK_SIZE -1; y >= yb; y--)
         {
-            for(x = xb; x < xb + chunckGroupCount * CHUNCK_WIDTH; x++)
+            for(x = xb; x < xb + chunckGroupCount * CHUNCK_SIZE; x++)
             {
                 if(checkLiquid(terrain->blocTypes, getBlock(terrain, x, y)))
                 {
                     processWaterBloc(waterman, terrain, x, y);
                 }
             }
-            for(x = xb + chunckGroupCount * CHUNCK_WIDTH -1; x >= xb; x--)
+            for(x = xb + chunckGroupCount * CHUNCK_SIZE -1; x >= xb; x--)
             {
                 if(checkLiquid(terrain->blocTypes, getBlock(terrain, x, y)))
                 {
@@ -63,7 +63,7 @@ void waterman_update(WaterManager* waterman, Terrain* terrain)
 
             int lineWaterLevel = 0; bool waterOnLine = false;
             Bloc previous = getBlock(terrain, xb-1, y), current = getBlock(terrain, xb, y), next = getBlock(terrain, xb+1, y);
-            for(x = xb; x < xb + chunckGroupCount * CHUNCK_WIDTH; x++)
+            for(x = xb; x < xb + chunckGroupCount * CHUNCK_SIZE; x++)
             {
                 if(checkLiquid(terrain->blocTypes, current))
                 {
@@ -93,7 +93,7 @@ void waterman_update(WaterManager* waterman, Terrain* terrain)
             }
         }
 
-        SDL_Rect chunckUpdateRect = {int(xb-1), int(yb-1), chunckGroupCount * CHUNCK_WIDTH+2, CHUNCK_HEIGHT+2};
+        SDL_Rect chunckUpdateRect = {int(xb-1), int(yb-1), chunckGroupCount * CHUNCK_SIZE +2, CHUNCK_SIZE +2};
 		terrainRenderer->updateRect(chunckUpdateRect);
 
         chunckGroupStart += chunckGroupCount;
@@ -135,7 +135,7 @@ void processWaterBloc(WaterManager* waterman, Terrain* terrain, Uint32 x, Uint32
         setLiquidLevel(terrain, x, y+1, belowValue + transfer);
         currentValue -= transfer;
 
-        if((y+1) % CHUNCK_HEIGHT == 0) {
+        if((y+1) % CHUNCK_SIZE == 0) {
             waterman_addActiveBloc(waterman, x, y+1);
             printf("addition down\n");
         }
@@ -188,7 +188,7 @@ void processWaterBloc(WaterManager* waterman, Terrain* terrain, Uint32 x, Uint32
         setLiquidLevel(terrain, x, y, currentValue + transfer);
         setLiquidLevel(terrain, x, y-1, upValue - transfer);
 
-        if(y % CHUNCK_HEIGHT == 0) {
+        if(y % CHUNCK_SIZE == 0) {
             waterman_addActiveBloc(waterman, x, y-1);
             printf("addition up\n");
         }
@@ -196,19 +196,19 @@ void processWaterBloc(WaterManager* waterman, Terrain* terrain, Uint32 x, Uint32
 
     if(startValue != getLiquidLevel(terrain, x, y))
     {
-        if(x % CHUNCK_WIDTH == 0 && checkLiquid(terrain->blocTypes, getBlock(terrain, x-1, y)))
+        if(x % CHUNCK_SIZE == 0 && checkLiquid(terrain->blocTypes, getBlock(terrain, x-1, y)))
         {
             waterman_addActiveBloc(waterman, x-1, y);
             printf("addition left\n");
         }
 
-        if((x+1) % CHUNCK_WIDTH == 0 && checkLiquid(terrain->blocTypes, getBlock(terrain, x+1, y)))
+        if((x+1) % CHUNCK_SIZE == 0 && checkLiquid(terrain->blocTypes, getBlock(terrain, x+1, y)))
         {
             waterman_addActiveBloc(waterman, x+1, y);
             printf("addition right\n");
         }
 
-        if(y % CHUNCK_HEIGHT == 0 && checkLiquid(terrain->blocTypes, getBlock(terrain, x, y-1))) {
+        if(y % CHUNCK_SIZE == 0 && checkLiquid(terrain->blocTypes, getBlock(terrain, x, y-1))) {
             waterman_addActiveBloc(waterman, x, y-1);
             printf("addition up\n");
         }

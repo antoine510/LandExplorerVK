@@ -12,11 +12,7 @@ public:
 	~TerrainRenderer() { DescriptorSet::destroyPool(_pool); DescriptorSet::destroyLayout(_layout); delete _pipeline; }
 
 	void setTerrain(Terrain* terrain);
-	void setSkyColor(SDL_Color color) {
-		_pushConsts.skyColor.r = color.r / 255.0f;
-		_pushConsts.skyColor.g = color.g / 255.0f;
-		_pushConsts.skyColor.b = color.b / 255.0f;
-	}
+	void setSkyColor(const Vec4& color) { _pushConsts.skyColor = color; }
 
 	void updateRect(SDL_Rect rect);
 	void updatePos(int x, int y) { updateRect(SDL_Rect{x, y, 1, 1}); }

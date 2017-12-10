@@ -54,7 +54,7 @@ void updateController(KeyStates* keyStates, Level* level, int playerID, PlayerCo
     SDL_GetMouseState(&x, &y);
 
     if(pControl->currentWeaponID == -1)
-        pControl->direction = (x >= 0) ? 1 : -1;
+        pControl->direction = (x >= (myDisplayMode.w >> 1)) ? 1 : -1;
 
     if(isKeyHeld(keyStates, key_inventory))
     {

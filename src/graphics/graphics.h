@@ -40,9 +40,7 @@ struct Graphics {
 };
 
 Graphics* initGraphics();
-void setDisplaySize(Graphics* gfx, int w, int h);
-void toggleDisplayFullscreen(Graphics* gfx);
-void setDisplayFullscreen(Graphics* gfx, bool fullscreen);
+void setDisplaySize(Graphics* gfx, int w, int h, bool fullscreen = false);
 
 inline void startFrame(Graphics* gfx) { gfx->swapchain->beginCmdBuffer(gfx->cmdBuf, gfx->texPack->skyColor * Vec4(0.77f, 0.9f, 1.0f, 1.0f)); }
 inline void presentFrame(Graphics* gfx) { gfx->swapchain->presentCmdBuffer(gfx->cmdBuf); }
