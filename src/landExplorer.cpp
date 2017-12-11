@@ -85,12 +85,14 @@ void mainLoop(LandExplorer* landExplorer) {
 			renderCredits(landExplorer->gfx, landExplorer->credits);
 		default: break;
 		}
+
+#ifdef PERFLOG
 		std::cout << (int)SDL_GetTicks() - initTime << ", ";
+#endif // PERFLOG
 
 		presentFrame(landExplorer->gfx);
 		sound_playAllSounds(landExplorer->sound);
 
-		
 		//SDL_Delay(std::max(0, totTime - (int)SDL_GetTicks() + initTime));
 	} while(!isKeyHeld(&landExplorer->keyStates, key_quit) && landExplorer->mode != MURESULT_QUIT);
 }

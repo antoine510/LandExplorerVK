@@ -10,7 +10,6 @@
 
 #include <SDL_ttf.h>
 
-typedef struct _TTF_Font TTF_Font;
 struct SDL_Color;
 class Swapchain;
 
@@ -55,6 +54,7 @@ public:
 	Sprite& setFullscreen() { setPosition(0, 0); setScreenSize(Vec2(myDisplayMode.w, myDisplayMode.h)); return *this; }
 
 	Sprite& setPosition(int posX, int posY) { setPosition(Vec2(posX, posY)); return *this; }
+	Sprite& setPosition(float posX, float posY) { setPosition(Vec2(posX, posY)); return *this; }
 	Sprite& setPositionBloc(float posX, float posY) { setPosition(Vec2(posX * BLOC_SIZE, posY * BLOC_SIZE)); return *this; }
 	Sprite& setPosition(Vec2 pos) {
 		_pushConsts.pos = Vec2(-1, -1) + 2.f * _screenOrigin + (pos - _realSize * _origin) / Vec2(myDisplayMode.w >> 1, myDisplayMode.h >> 1);
@@ -130,41 +130,4 @@ private:
 	PushConstants _pushConsts = PushConstants(_realSize);
 	DescriptorSet& _descSet = genDescSet();
 };
-
-/*typedef struct Texture {
-	int w, h;
-	float xscale, yscale;
-	float angle;
-	SDL_Color* colorMod;
-	float alphaMod;
-	int clipW, clipH;
-	Vec2 clipOffset;
-
-	float xGL, yGL, wGL, hGL;
-} Texture;
-
-void updateTextureFromSurface(Texture* texture, SDL_Surface* surface);
-void updateTexture(Texture* texture, const SDL_Rect* rect, const void* pixels, int pitch);
-void modifyTextureFromSurface(Texture* texture, SDL_Surface* surface);
-void modifyTexture(Texture* texture, const SDL_Rect* rect, const void* pixels, int pitch);
-void setTextureColorMod(Texture* texture, SDL_Color* color);
-void setTextureAlphaMod(Texture* texture, Uint8 alpha);
-void setTextureAngle(Texture* texture, float angle);
-void setTextureOrigin(Texture* texture, int x, int y);
-void setTextureOriginRatio(Texture* texture, float x, float y);
-void setTexutreScalingMethod(Texture* texture, GLint scalingMethod);
-void setTextureClipSize(Texture* texture, int clipW, int clipH);
-void setTextureClip(Texture* texture, int clipX, int clipY);
-void setTexturePos(Texture* texture, int posX, int posY);
-void setTextureScale(Texture* texture, float scale);
-void setTextureSize(Texture* texture, int w, int h);
-void setTextureFullscreen(Texture* texture);
-void setTextureFullscreenCrop(Texture* texture);
-void drawTexture(Texture* texture);
-
-void invertPixels(SDL_Surface* srf);
-
-void destroyTexture(Texture* texture);
-
-int getTextureBPP(Texture* tex);*/
 

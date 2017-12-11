@@ -2,13 +2,11 @@
 #include "terrain/terrain.h"
 #include "utility/random.h"
 
+void savePerlinNoise2D(PerlinNoise2D perlin2D);
+
 SDL_Rect rectOriginRatio(SDL_Rect base, float rX, float rY) {
 	base.x -= int(rX * base.w); base.y -= int(rY * base.h);
 	return base;
-}
-
-SDL_Color modulateColor(SDL_Color* base, float rmod, float gmod, float bmod) {
-	return SDL_Color{ (Uint8)(base->r * rmod), (Uint8)(base->g * gmod), (Uint8)(base->b * bmod), 0 };
 }
 
 
@@ -18,61 +16,6 @@ void clampRect(SDL_Rect* rect, int xmin, int ymin, int xmax, int ymax) {
 	if(rect->y < ymin) { rect->h += rect->y - ymin; rect->y = ymin; }
 	if(rect->x + rect->w > xmax) { rect->w = xmax - rect->x; }
 	if(rect->y + rect->h > ymax) { rect->h = ymax - rect->y; }
-}
-
-void clampWorld(Uint16 wTerrain, Uint16 hTerrain, SDL_Rect* rect, int border) {
-	clampRect(rect, border, border, wTerrain - border,
-									hTerrain - border);
-}
-void clampWorldChunck(Uint16 wTerrainChunck, Uint16 hTerrainChunck, SDL_Rect* rect, int border) {
-	clampRect(rect, border, border, wTerrainChunck - border, hTerrainChunck - border);
-}
-
-
-void rotateClockwise(SDL_Surface* src, SDL_Rect* srcRect, SDL_Surface* dst, SDL_Rect* dstRect, Uint8 colMod) {
-	int x, y, srcpx, dstpx;                                  //src verifies w = h
-	for(y = 0; y < srcRect->h; y++)             //src is ABGR dst is ARGB
-	{
-		for(x = 0; x < srcRect->w; x++) {
-			srcpx = (srcRect->y + y) * src->pitch + (srcRect->x + x) * sizeof(Uint32);
-			dstpx = (dstRect->y + x) * dst->pitch + (dstRect->x + srcRect->h - y - 1) * sizeof(Uint32);
-
-			((Uint8*)dst->pixels)[dstpx + 3] = ((Uint8*)src->pixels)[srcpx + 3];                        //Alpha
-			((Uint8*)dst->pixels)[dstpx + 2] = (colMod * ((Uint8*)src->pixels)[srcpx]) / 255;         //Red
-			((Uint8*)dst->pixels)[dstpx + 1] = (colMod * ((Uint8*)src->pixels)[srcpx + 1]) / 255;       //Green
-			((Uint8*)dst->pixels)[dstpx] = (colMod * ((Uint8*)src->pixels)[srcpx + 2]) / 255;         //Blue
-		}
-	}
-}
-
-void rotateCounterclockwise(SDL_Surface* src, SDL_Rect* srcRect, SDL_Surface* dst, SDL_Rect* dstRect, Uint8 colMod) {
-	int x, y, srcpx, dstpx;                                  //src verifies w = h
-	for(y = 0; y < srcRect->h; y++) {
-		for(x = 0; x < srcRect->w; x++) {
-			srcpx = (srcRect->y + y) * src->pitch + (srcRect->x + x) * sizeof(Uint32);
-			dstpx = (dstRect->y + srcRect->w - x - 1) * dst->pitch + (dstRect->x + y) * sizeof(Uint32);
-
-			((Uint8*)dst->pixels)[dstpx + 3] = ((Uint8*)src->pixels)[srcpx + 3];                         //Alpha
-			((Uint8*)dst->pixels)[dstpx + 2] = (colMod * ((Uint8*)src->pixels)[srcpx]) / 255;        //Red
-			((Uint8*)dst->pixels)[dstpx + 1] = (colMod * ((Uint8*)src->pixels)[srcpx + 1]) / 255;        //Green
-			((Uint8*)dst->pixels)[dstpx] = (colMod * ((Uint8*)src->pixels)[srcpx + 2]) / 255;        //Blue
-		}
-	}
-}
-
-void rotateHalf(SDL_Surface* src, SDL_Rect* srcRect, SDL_Surface* dst, SDL_Rect* dstRect, Uint8 colMod) {
-	int x, y, srcpx, dstpx;                                  //src verifies w = h
-	for(y = 0; y < srcRect->h; y++) {
-		for(x = 0; x < srcRect->w; x++) {
-			srcpx = (srcRect->y + y) * src->pitch + (srcRect->x + x) * sizeof(Uint32);
-			dstpx = (dstRect->y + srcRect->h - y - 1) * dst->pitch + (dstRect->x + srcRect->w - x - 1) * sizeof(Uint32);
-
-			((Uint8*)dst->pixels)[dstpx + 3] = ((Uint8*)src->pixels)[srcpx + 3];                         //Alpha
-			((Uint8*)dst->pixels)[dstpx + 2] = (colMod * ((Uint8*)src->pixels)[srcpx]) / 255;        //Red
-			((Uint8*)dst->pixels)[dstpx + 1] = (colMod * ((Uint8*)src->pixels)[srcpx + 1]) / 255;        //Green
-			((Uint8*)dst->pixels)[dstpx] = (colMod * ((Uint8*)src->pixels)[srcpx + 2]) / 255;        //Blue
-		}
-	}
 }
 
 PerlinNoise initPerlin(int width, int scale) {
@@ -105,8 +48,8 @@ PerlinNoise2D initPerlin2D(int width, int height, int scaleX, int scaleY) {
 	int i;
 	for(i = 0; i < (perlin.stepCountX + 1) * (perlin.stepCountY + 1); i++) {
 		float theta = Random<float>::range(0, 2 * Constant::pi);
-		perlin.g[i].x = cosf(theta);
-		perlin.g[i].y = sinf(theta);
+		perlin.g[i].x = std::cos(theta);
+		perlin.g[i].y = std::sin(theta);
 	}
 
 	return perlin;

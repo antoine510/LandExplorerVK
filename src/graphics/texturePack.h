@@ -28,7 +28,7 @@ typedef struct TexturePack {
 
 TexturePack* initTexturePack(Graphics* gfx);
 
-void blitBreak(TexturePack* texPack, vk::CommandBuffer& cmdBuf, int breakingStep, Uint32 x, Uint32 y);
+void blitBreak(TexturePack* texPack, vk::CommandBuffer& cmdBuf, int breakingStep, int x, int y);
 void blitMapIcon(TexturePack* texPack, vk::CommandBuffer& cmdBuf, GfxData* gfxData, SDL_Rect rect, float scalingFactor, SDL_Point panningPos);
 void blitEntity(TexturePack* texPack, vk::CommandBuffer& cmdBuf, GfxData* gfxData, SDL_Rect rect);
 void blitHearth(TexturePack* texPackk, vk::CommandBuffer& cmdBuf, SDL_Point pos, float ratioFull);

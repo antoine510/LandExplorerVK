@@ -35,19 +35,13 @@ void backgroundRendererLoadTextures(BackgroundRenderer* bgRenderer, xmlNodePtr m
 	}
 }
 
-void setBackgroundRendererTime(BackgroundRenderer* bgRenderer, float* levelTime) {
-	bgRenderer->levelTime = levelTime;
-}
-
 void renderBackground(BackgroundRenderer* bgRenderer, Graphics* gfx, int bgID) {
 	Sprite* bg = bgRenderer->background[bgID];
-	//bg->setColorMod(gfx->texPack->skyColor);
-	//SDL_Color bgColor = modulateColor(&gfx->texPack->skyColor, 0.77f, 0.9f, 1.0f);
 
 	int offset = 0;
 	switch(bgID) {
 	case BG_BIOMES + BIOME_PLAINS: offset = 2000; break;
-	case BG_BIOMES + BIOME_MOUNTAINS: offset = 2100; break;
+	case BG_BIOMES + BIOME_MOUNTAINS: offset = 1900; break;
 	case BG_BIOMES + BIOME_OCEAN: offset = 2250; break;
 	}
 
@@ -60,8 +54,8 @@ void renderBackground(BackgroundRenderer* bgRenderer, Graphics* gfx, int bgID) {
 
 void renderSun(BackgroundRenderer* bgRenderer, vk::CommandBuffer& cmdBuf, float time) {
 	if(time > 0.0 && time < 720.0) {
-		int x = (int)((0.75f - cosf(time / 1440 * 2 * Constant::pi)) * myDisplayMode.w * 2 / 3);
-		int y = (int)((1 - sinf(time / 1440 * 2 * Constant::pi)) * myDisplayMode.h / 2);
+		float x = (0.75f - cosf(time / 1440 * 2 * Constant::pi)) * myDisplayMode.w * 2 / 3;
+		float y = (1 - sinf(time / 1440 * 2 * Constant::pi)) * myDisplayMode.h / 2;
 		bgRenderer->sun->setPosition(x, y);
 		bgRenderer->sun->draw(cmdBuf);
 	}

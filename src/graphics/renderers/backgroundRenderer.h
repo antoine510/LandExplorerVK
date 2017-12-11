@@ -22,7 +22,7 @@ typedef struct BackgroundRenderer {
 BackgroundRenderer* createBackgroundRenderer();
 void backgroundRendererLoadTextures(BackgroundRenderer* bgRenderer, xmlNodePtr mainNode);
 
-void setBackgroundRendererTime(BackgroundRenderer* bgRenderer, float* levelTime);
+inline void setBackgroundRendererTime(BackgroundRenderer* bgRenderer, float* levelTime) { bgRenderer->levelTime = levelTime; }
 void renderBackground(BackgroundRenderer* bgRenderer, Graphics* gfx, int bgID);
 
 void destroyBackgroundRenderer(BackgroundRenderer* bgRenderer);

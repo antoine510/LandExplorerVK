@@ -38,12 +38,12 @@ void renderCredits(Graphics* gfx, Credits* credits)
         {
 			gfx->creditsRenderer->lineTextures[i]->setPosition(0, y);
             gfx->creditsRenderer->lineTextures[i]->draw(gfx->cmdBuf);
-            y -= gfx->creditsRenderer->lineTextures[i]->getExtent().height + 5;
+            y += gfx->creditsRenderer->lineTextures[i]->getExtent().height + 5;
         }
         else break;
     }
 
-    if(y < 0)
+    if(y < -10)
     {
         gfx->creditsRenderer->endLineTexture->draw(gfx->cmdBuf);
     }

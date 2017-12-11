@@ -52,7 +52,7 @@ TexturePack* initTexturePack(Graphics* gfx) {
 	return texPack;
 }
 
-void blitBreak(TexturePack* texPack, vk::CommandBuffer& cmdBuf, int breakingStep, Uint32 x, Uint32 y) {
+void blitBreak(TexturePack* texPack, vk::CommandBuffer& cmdBuf, int breakingStep, int x, int y) {
 	texPack->breakingBloc->setClip(breakingStep, 0);
 	texPack->breakingBloc->setPosition(x, y);
 	texPack->breakingBloc->draw(cmdBuf);

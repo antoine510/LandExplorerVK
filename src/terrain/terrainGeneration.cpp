@@ -106,9 +106,6 @@ void generateTerrain(Level* level)
     clampWorld(terrain->width, terrain->height, &allTerrain, TERRAIN_BORDER);
     processBlockConditions(terrain, allTerrain);
 
-    SDL_Rect allChuncks = {0, 0, terrain->widthChunck, terrain->heightChunck};
-    clampWorldChunck(terrain->widthChunck, terrain->heightChunck, &allTerrain, TERRAIN_BORDER_CHUNCK);
-
     #ifdef PERFLOG
     printf("Terrain processing : %d\n", SDL_GetTicks() - t);
     #endif // PERFLOG

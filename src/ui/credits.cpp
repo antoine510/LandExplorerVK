@@ -9,7 +9,7 @@ Credits* createCredits()
     Credits* credits = (Credits*)calloc(1, sizeof(Credits));
 
     credits->lineCount = 0;
-    credits->baseY = (float)-myDisplayMode.h/2 - 10;
+    credits->baseY = float(myDisplayMode.h + 10);
 
     loadCredits(credits);
     return credits;
@@ -42,7 +42,7 @@ void loadCredits(Credits* credits)
 
 void updateCredits(Credits* credits)
 {
-    credits->baseY += (40.0f / FPS);
+    credits->baseY -= (40.0f / FPS);
 }
 
 void destroyCredits(Credits* credits)
