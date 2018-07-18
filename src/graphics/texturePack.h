@@ -12,8 +12,8 @@
 #define TEXTURE_ITEM_SIZE 32
 
 typedef struct TexturePack {
-	StagedImage* blocAtlas;
-	StagedImage* backwallAtlas;
+	DeviceImage* blocAtlas;
+	DeviceImage* backwallAtlas;
 
     Sprite* breakingBloc;
 	Sprite* playerHearth;

@@ -34,25 +34,23 @@ AllocatedBuffer::~AllocatedBuffer() {
 	VulkanState::device.freeMemory(_memory);
 }
 
-void AllocatedBuffer::update(const void* data, vk::DeviceSize offset, vk::DeviceSize updateSize) {
-	if(updateSize == 0) updateSize = _size;
+void HostBuffer::update(const void* data, vk::DeviceSize offset, vk::DeviceSize updateSize) {
 	void* bufferMappedMemory = mapMemory(offset, updateSize);
 	memcpy(bufferMappedMemory, data, updateSize);
 	unmapMemory();
 }
 
-void* AllocatedBuffer::mapMemory(vk::DeviceSize offset, vk::DeviceSize size) {
+void* HostBuffer::mapMemory(vk::DeviceSize offset, vk::DeviceSize size) {
 	if(size == 0) size = _size;
 	return VulkanState::device.mapMemory(_memory, offset, size);
 }
 
-void AllocatedBuffer::unmapMemory() {
+void HostBuffer::unmapMemory() {
 	VulkanState::device.unmapMemory(_memory);
 }
 
-
-void StagedBuffer::stageBuffer(vk::DeviceSize offset, vk::DeviceSize size) {
+void DeviceBuffer::update(const HostBuffer& src, vk::DeviceSize srcOffset, vk::DeviceSize dstOffset, vk::DeviceSize updateSize) {
 	OneUseCommandBuffer oucb;
-	oucb.copyBuffer(*_staging, _buffer, vk::BufferCopy(offset, offset, size));
+	oucb.copyBuffer(src, _buffer, vk::BufferCopy(srcOffset, dstOffset, updateSize));
 }
 

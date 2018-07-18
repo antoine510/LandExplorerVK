@@ -8,7 +8,7 @@
 
 class TerrainRenderer {
 public:
-	TerrainRenderer(Swapchain& swapchain, StagedImage& blocAtlas, StagedImage& backwallAtlas, const Vec4& viewOrigin);
+	TerrainRenderer(Swapchain& swapchain, DeviceImage& blocAtlas, DeviceImage& backwallAtlas, const Vec4& viewOrigin);
 	~TerrainRenderer() { DescriptorSet::destroyPool(_pool); DescriptorSet::destroyLayout(_layout); delete _pipeline; }
 
 	void setTerrain(Terrain* terrain);
@@ -28,7 +28,7 @@ private:
 		vk::Bool32 backwall;
 	};
 
-	void genGrid();
+	static VertexBuffer genGrid();
 	void updateChunck(int xc, int yc, int wc);
 
 	vk::DescriptorSetLayout createLayout();
@@ -40,11 +40,11 @@ private:
 	Pipeline* _pipeline;
 	std::vector<Shader> _shaders;
 
-	const StagedImage& _blocAtlas, &_backwallAtlas;
+	const DeviceImage& _blocAtlas, &_backwallAtlas;
 	Terrain* _terrain;
 	const Vec4& _viewOrigin;
 
 	PushConstants _pushConsts;
-	StagedBuffer _blocBuffer;
+	DeviceBuffer _blocBuffer;
 };
 

@@ -23,8 +23,8 @@ Graphics* initGraphics() {
 	gfx->playerRect = NULL;
 
 	VulkanState::setup(gfx->window);
-	gfx->swapchain = new Swapchain(vk::Extent2D(myDisplayMode.w, myDisplayMode.h), vk::PresentModeKHR::eFifo);
 	imageSamplers = new ImageSamplers();
+	gfx->swapchain = new Swapchain(vk::Extent2D(myDisplayMode.w, myDisplayMode.h), vk::PresentModeKHR::eFifo);
 
 	initRenderers(gfx);
 
@@ -61,7 +61,7 @@ void setDisplaySize(Graphics* gfx, int w, int h, bool fullscreen) {
 			SDL_SetWindowSize(gfx->window, w, h);
 		}
 		SDL_GetWindowDisplayMode(gfx->window, &myDisplayMode);
-		
+
 		gfx->viewOrigin = Vec4{0, 0, float(myDisplayMode.w) / BLOC_SIZE, float(myDisplayMode.h) / BLOC_SIZE};
 		gfx->swapchain = new Swapchain(vk::Extent2D(myDisplayMode.w, myDisplayMode.h), vk::PresentModeKHR::eFifo);
 		initRenderers(gfx);

@@ -17,9 +17,9 @@ TexturePack* initTexturePack(Graphics* gfx) {
 		std::string filename("textures/");
 		filename += asStringl(texture, "path");
 		if(checkName(texture, "blocAtlas")) {
-			texPack->blocAtlas = new StagedImage(filename);
+			texPack->blocAtlas = new DeviceImage(filename);
 		} else if(checkName(texture, "backwallAtlas")) {
-			texPack->backwallAtlas = new StagedImage(filename);
+			texPack->backwallAtlas = new DeviceImage(filename);
 		} else if(checkName(texture, "breakingBloc")) {
 			texPack->breakingBloc = new Sprite(filename);
 			texPack->breakingBloc->setClipSize(BLOC_SIZE, BLOC_SIZE);

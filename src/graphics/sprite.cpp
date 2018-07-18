@@ -10,8 +10,7 @@ SpriteRenderer::SpriteRenderer(const Swapchain& swapchain) {
 	_shaders.emplace_back("sprite", vk::ShaderStageFlagBits::eVertex);
 	_shaders.emplace_back("sprite", vk::ShaderStageFlagBits::eFragment);
 	_vBuf = new VertexBuffer(6, 8, vk::Format::eR32G32Sfloat);
-	_vBuf->getStagingBuffer().update(spriteVertices);
-	_vBuf->stageBuffer();
+	_vBuf->update(HostBuffer(spriteVertices, 12 * sizeof(float)));
 	_descPool = DescriptorSet::createPool({{vk::DescriptorType::eCombinedImageSampler, 1}}, maxSprites);
 	_descLayout = DescriptorSet::createLayout(DescriptorSetBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment));
 	_descSets.reserve(maxSprites);

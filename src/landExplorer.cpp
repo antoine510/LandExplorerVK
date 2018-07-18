@@ -44,7 +44,6 @@ void mainLoop(LandExplorer* landExplorer) {
 		updateTimers(timerStack);
 		processKeystates(&landExplorer->keyStates);
 
-		//TODO: enable sprite endering
 		switch(landExplorer->mode) {
 		case MURESULT_LEVEL:
 			landExplorer->mode = updateLevel(landExplorer->level, &landExplorer->keyStates);

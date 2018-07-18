@@ -13,8 +13,8 @@ public:
 
 	~Swapchain();
 
-	void beginCmdBuffer(vk::CommandBuffer& cmdBuffer, Vec4 clearColor);
-	void presentCmdBuffer(vk::CommandBuffer& cmdBuffer);
+	void beginCmdBuffer(const vk::CommandBuffer& cmdBuffer, const Vec4& clearColor);
+	void presentCmdBuffer(const vk::CommandBuffer& cmdBuffer);
 
 	vk::Extent2D getExtent() const { return _extent; }
 	auto& getRenderPass() const { return _renderPass; }
@@ -26,8 +26,8 @@ private:
 
 	vk::SwapchainKHR _swapchain;
 	vk::Extent2D _extent;
-	std::vector<AllocatedImage> _colorImages;
-	AllocatedImage _depthImage;
+	std::vector<DeviceImage> _colorImages;
+	DeviceImage _depthImage;
 
 	RenderPass _renderPass;
 	std::vector<vk::Framebuffer> _framebuffers;

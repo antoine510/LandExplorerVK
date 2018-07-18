@@ -39,12 +39,12 @@ struct SpriteRenderer {
 };
 extern SpriteRenderer* spriteRenderer;
 
-class Sprite : public SampledImage {
+class Sprite : public DeviceImage {
 public:
-	Sprite(const std::string& path) : SampledImage(path) {}
-	Sprite(SDL_Surface* srf) : SampledImage(srf) {}
-	Sprite(const std::string& text, const SDL_Color& color, TTF_Font* font) : SampledImage(TTF_RenderText_Blended(font, text.c_str(), color)) {}
-	Sprite(unsigned int width, unsigned int height) : SampledImage(width, height) {}
+	Sprite(const std::string& path) : DeviceImage(path) {}
+	Sprite(SDL_Surface* srf) : DeviceImage(srf) {}
+	Sprite(const std::string& text, const SDL_Color& color, TTF_Font* font) : DeviceImage(TTF_RenderText_Blended(font, text.c_str(), color)) {}
+	Sprite(unsigned int width, unsigned int height) : DeviceImage(width, height) {}
 	Sprite(const Sprite& other) = delete;
 
 	~Sprite() { _descSet.erase(); }

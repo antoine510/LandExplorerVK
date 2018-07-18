@@ -9,10 +9,6 @@ static void updateMapRect(MapRenderer* mapRenderer, Terrain* terrain, Uint32 x, 
 static Uint32 mapBGRA(Uint8 r, Uint8 g, Uint8 b, Uint8 a) { return b + (g << 8) + (r << 16) + (a << 24); }
 
 void initMapRenderer(MapRenderer* mapRenderer, Graphics* gfx) {
-	//mapRenderer->pixels = SDL_CreateRGBSurface(0, TERRAIN_WIDTH, TERRAIN_HEIGHT, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-	//SDL_Rect mapSize = {TERRAIN_BORDER, TERRAIN_BORDER, TERRAIN_WIDTH - 2 * TERRAIN_BORDER, TERRAIN_HEIGHT - 2 * TERRAIN_BORDER};
-	//SDL_FillRect(mapRenderer->pixels, &mapSize, SDL_MapRGBA(mapRenderer->pixels->format, 0, 0, 0, 255));
-
 	mapRenderer->blockColors[BLOC_DIRT] = mapBGRA(151, 107, 75, 255);
 	mapRenderer->blockColors[BLOC_ROCK] = mapBGRA(130, 130, 130, 255);
 	mapRenderer->blockColors[BLOC_WATER] = mapBGRA(9, 61, 191, 255);
@@ -25,7 +21,7 @@ void initMapRenderer(MapRenderer* mapRenderer, Graphics* gfx) {
 	mapRenderer->blockColors[BACKWALL_TYPES_OFFSET + BACKWALL_ROCK] = mapBGRA(52, 52, 52, 255);
 
 	mapRenderer->mapp = new Sprite(TERRAIN_WIDTH, TERRAIN_HEIGHT);
-	mapRenderer->buffer = new StagingBuffer(4 * TERRAIN_WIDTH * TERRAIN_HEIGHT);
+	mapRenderer->buffer = new HostBuffer(4 * TERRAIN_WIDTH * TERRAIN_HEIGHT);
 	mapRenderer->mappedBuffer = (Uint32*)mapRenderer->buffer->mapMemory();
 
 	Uint32* fillPtr = mapRenderer->mappedBuffer + TERRAIN_BORDER;
@@ -73,8 +69,6 @@ void updateMapRendering(MapRenderer* mapRenderer, Graphics* gfx, Map* mapp, Terr
 }
 
 void updateMapRect(MapRenderer* mapRenderer, Terrain* terrain, Uint32 x, Uint32 y, Uint32 x2, Uint32 y2) {
-	//Uint32* pixel = (Uint32*)mapRenderer->buffer->mapMemory(4 * (x + y * mapRenderer->mapp->getExtent().width),
-	//														4 * ((x2 - x) + (y2 - y) * mapRenderer->mapp->getExtent().width));
 	Uint32* pixel = mapRenderer->mappedBuffer + x + y * mapRenderer->mapp->getExtent().width;
 	Uint32* pixelRow = pixel;
 
@@ -115,9 +109,7 @@ void renderMap(MapRenderer* mapRenderer, Graphics* gfx, Map* mapp, Level* level)
 	if(!mapp->mapUpdated) {
 		updateMapRect(mapRenderer, level->terrain, Uint32(gfx->viewOrigin.x), Uint32(gfx->viewOrigin.y),
 					  Uint32(gfx->viewOrigin.x + gfx->viewOrigin.z), Uint32(gfx->viewOrigin.y + gfx->viewOrigin.w));
-		//mapRenderer->buffer->unmapMemory();
 		mapRenderer->mapp->stageBuffer(*mapRenderer->buffer);
-		//mapRenderer->mappedBuffer = (Uint32*)mapRenderer->buffer->mapMemory();
 		mapp->panningPos.x = (int)((gfx->viewOrigin.x + gfx->viewOrigin.z / 2) * scaling - (myDisplayMode.w >> 1));     //Center the view on the world camera
 		mapp->panningPos.y = (int)((gfx->viewOrigin.y + gfx->viewOrigin.w / 2) * scaling - (myDisplayMode.h >> 1));
 		mapp->mapUpdated = 1;

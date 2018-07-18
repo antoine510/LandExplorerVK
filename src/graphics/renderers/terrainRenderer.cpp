@@ -2,7 +2,7 @@
 #include "graphics/vulkan/Swapchain.h"
 #include "utility/mathUtility.h"
 
-void TerrainRenderer::genGrid() {
+VertexBuffer TerrainRenderer::genGrid() {
 	std::vector<uint32_t> res;
 	res.reserve(6u * gridW * gridH);
 	for(uint8_t j = 0; j < gridH; ++j) {
@@ -12,15 +12,15 @@ void TerrainRenderer::genGrid() {
 			res.push_back(0x0 + bloc); res.push_back(0x30000 + bloc); res.push_back(0x10000 + bloc);
 		}
 	}
-	_vBuf.getStagingBuffer().update(res.data());
-	_vBuf.stageBuffer();
-	_vBuf.lock();
+	VertexBuffer vbuf((uint32_t)res.size(), sizeof(uint32_t), vk::Format::eR32Uint);
+	vbuf.update(HostBuffer(res));
+	return vbuf;
 }
 
-TerrainRenderer::TerrainRenderer(Swapchain& swapchain, StagedImage& blocAtlas, StagedImage& backwallAtlas, const Vec4& viewOrigin) :
+TerrainRenderer::TerrainRenderer(Swapchain& swapchain, DeviceImage& blocAtlas, DeviceImage& backwallAtlas, const Vec4& viewOrigin) :
 	_blocAtlas(blocAtlas), _backwallAtlas(backwallAtlas), _viewOrigin(viewOrigin),
 	_blocBuffer(4 * TERRAIN_WIDTH * TERRAIN_HEIGHT, vk::BufferUsageFlagBits::eStorageBuffer),
-	_vBuf(6u * gridW * gridH, 4, vk::Format::eR32Uint),
+	_vBuf(genGrid()),
 	_blocSet(_pool, _layout), _backwallSet(_pool, _layout) {
 	genGrid();
 	_shaders.emplace_back("terrain", vk::ShaderStageFlagBits::eVertex);
@@ -70,8 +70,7 @@ void TerrainRenderer::updateChunck(int xc, int yc, int wc) {
 		}
 	}
 	uint32_t offset = (xc + yc * (TERRAIN_WIDTH / gridW)) * gridW * gridH;
-	_blocBuffer.getStagingBuffer().update(cdata.data(), 4 * offset, 4 * cdata.size());
-	_blocBuffer.stageBuffer(4 * offset, 4 * cdata.size());
+	_blocBuffer.update(HostBuffer(cdata), offset * sizeof(decltype(cdata)::value_type));
 }
 
 void TerrainRenderer::renderTerrain(vk::CommandBuffer& cmdBuf, bool backwall) {

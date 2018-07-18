@@ -55,7 +55,7 @@ Swapchain::~Swapchain() {
 	VulkanState::device.destroySwapchainKHR(_swapchain);
 }
 
-void Swapchain::beginCmdBuffer(vk::CommandBuffer& cmdBuffer, Vec4 clearColor) {
+void Swapchain::beginCmdBuffer(const vk::CommandBuffer& cmdBuffer, const Vec4& clearColor) {
 	_imageIndex = VulkanState::device.acquireNextImageKHR(_swapchain, UINT64_MAX, _hasImage, vk::Fence()).value;
 
 	vk::ClearValue depthClear[2] = {vk::ClearColorValue(std::array<float, 4>{clearColor.r, clearColor.g, clearColor.b, clearColor.a}), vk::ClearDepthStencilValue(1.f, 0)};
@@ -75,13 +75,13 @@ vk::Format Swapchain::getColorFormat() {
 	}
 }
 
-void Swapchain::presentCmdBuffer(vk::CommandBuffer& cmdBuffer) {
+void Swapchain::presentCmdBuffer(const vk::CommandBuffer& cmdBuffer) {
 	cmdBuffer.endRenderPass();
 	cmdBuffer.end();
 
 	_presentSubmitInfo.setPCommandBuffers(&cmdBuffer);
 	VulkanState::deviceQueue.submit(_presentSubmitInfo, _imageReady);
-	
+
 
 	VulkanState::device.waitForFences(_imageReady, true, UINT64_MAX);	// TODO: fix this stall
 
