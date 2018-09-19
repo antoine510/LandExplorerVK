@@ -21,3 +21,5 @@ struct ChunckRenderer;
 struct Level;
 struct PlayerControl;
 
+class LuaScript;
+

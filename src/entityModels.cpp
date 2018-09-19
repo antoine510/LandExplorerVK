@@ -1,48 +1,47 @@
 #include "entityModels.h"
-#include "utility/xmlTools.h"
+#include "luaScript.h"
 
-void setEntityAsModel(Entities* entities, unsigned int entityID, const char* modelName) {
+void setEntityAsModel(Entities* entities, unsigned int entityID, const std::string& modelName) {
 	destroyEntity(entities, entityID);
 
-	std::string filename("entityModels/");
-	filename += modelName;
-	filename += ".xml";
-
-	xmlDocPtr levelDoc = parseXML(filename);
-	xmlNodePtr component = xmlDocGetRootElement(levelDoc)->xmlChildrenNode;
-	while(component->type == XML_TEXT_NODE) component = component->next;
-
-	while(component) {
-		if(checkName(component, "Rect")) {
-			entities->components[entityID] |= COMP_RECT;
-			entities->rect[entityID] = getRectl(component);
-		} else if(checkName(component, "GfxData")) {
-			entities->components[entityID] |= COMP_GFXDATA;
-			entities->gfxData[entityID] = getGfxDatal(component);
-		} else if(checkName(component, "Status")) {
-			entities->components[entityID] |= COMP_STATUS;
-			entities->status[entityID] = getStatusl(component);
-		} else if(checkName(component, "DynamicData")) {
-			entities->components[entityID] |= COMP_DYNAMIC;
-			entities->dynData[entityID] = getDynamicData(component);
-		} else if(checkName(component, "CollisionData")) {
-			entities->components[entityID] |= COMP_COLLIDEABLE;
-			entities->collData[entityID] = getCollisionData(component);
-			initCollisionData(entities, entityID);
-		} else if(checkName(component, "AIData")) {
-			entities->components[entityID] |= COMP_AI;
-			entities->aiData[entityID] = getAIData(component);
-		} else if(checkName(component, "PlayerControl")) {
-			entities->components[entityID] |= COMP_PLAYER_CONTROL;
-		} else if(checkName(component, "WeaponData")) {
-			entities->components[entityID] |= COMP_WEAPON;
-			entities->weaponData[entityID] = getWeaponData(component);
-		} else if(checkName(component, "TriggerData")) {
-			entities->components[entityID] |= COMP_TRIGGER;
-		} else { fprintf(stderr, "Error : Unexpected component in model %s\n", modelName); }
-
-		do component = component->next; while(component && component->type == XML_TEXT_NODE);
+	LuaScript script("entityModels/" + modelName + ".lua");
+	if(script.has("size")) {
+		auto scope(script.getScope("size"));
+		entities->components[entityID] |= COMP_RECT;
+		auto sz = script.get<SDL_Point>();
+		entities->rect[entityID] = {0, 0, sz.x, sz.y};
 	}
-	xmlFreeDoc(levelDoc);
+	if(script.has("gfxData")) {
+		auto scope(script.getScope("gfxData"));
+		entities->components[entityID] |= COMP_GFXDATA;
+		entities->gfxData[entityID] = createGfxData(script.get<int>("texID"), script.get<int>("texState"));
+	}
+	if(script.has("status")) {
+		auto scope(script.getScope("status"));
+		entities->components[entityID] |= COMP_STATUS;
+		entities->status[entityID] = createStatus(script.get<std::string>("name"), script.get<float>("HP"), script.get<float>("knockback"));
+	}
+	if(script.hasTrue("dynamic")) {
+		entities->components[entityID] |= COMP_DYNAMIC;
+		entities->dynData[entityID] = createDynamicData(Vec2());
+	}
+	if(script.has("collisionData")) {
+		auto scope(script.getScope("collisionData"));
+		entities->components[entityID] |= COMP_COLLIDEABLE;
+		entities->collData[entityID] = createCollisionData(Vec2(), script.get<Vec2>(), script.get<std::string>("collType"));
+		initCollisionData(entities, entityID);
+	}
+	if(script.has("AIData")) {
+		auto scope(script.getScope("AIData"));
+		entities->components[entityID] |= COMP_AI;
+		entities->aiData[entityID] = createAIData(script.get<std::string>("AIType"), script.get<float>("AIRange"));
+	}
+	if(script.hasTrue("playerControl")) entities->components[entityID] |= COMP_PLAYER_CONTROL;
+	if(script.has("weaponData")) {
+		auto scope(script.getScope("weaponData"));
+		entities->components[entityID] |= COMP_WEAPON;
+		entities->weaponData[entityID] = createWeaponData(script.get<float>("velocity"), script.get<float>("knockback"), script.get<int>("damage"), script.get<std::string>("type"));
+	}
+	if(script.hasTrue("trigger")) entities->components[entityID] |= COMP_TRIGGER;
 }
 

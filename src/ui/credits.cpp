@@ -1,12 +1,12 @@
 #include "credits.h"
-#include "utility/xmlTools.h"
+#include "luaScript.h"
 #include "graphics/displayInfo.h"
 
 static void loadCredits(Credits* credits);
 
 Credits* createCredits()
 {
-    Credits* credits = (Credits*)calloc(1, sizeof(Credits));
+	Credits* credits = new Credits;
 
     credits->lineCount = 0;
     credits->baseY = float(myDisplayMode.h + 10);
@@ -17,27 +17,19 @@ Credits* createCredits()
 
 void loadCredits(Credits* credits)
 {
-    xmlDocPtr creditsDoc = parseXML("ui/credits.xml");
-	xmlNodePtr line = xmlDocGetRootElement(creditsDoc)->xmlChildrenNode;
+	LuaScript script("ui/credits.lua");
 
-    while(line->type == XML_TEXT_NODE) line = line->next;
-    while (line)
-    {
-        if(checkName(line, "Line"))
-        {
-            credits->lines[credits->lineCount] = getNodeContent(line);
-            credits->lineSize[credits->lineCount] = checkAttributeExists(line, "size") ? asIntl(line, "size") : 30;
-
-            credits->lineCount++;
-        } else if (checkName(line, "EndLine")) {
-            credits->endLine = getNodeContent(line);
-            credits->endLineSize = asIntl(line, "size");
-        }
-
-        do line = line->next; while(line && line->type == XML_TEXT_NODE);
-    }
-
-	xmlFreeDoc(creditsDoc);
+	{
+		auto scope(script.getScope("creditLines"));
+		credits->lineCount = script.getLength();
+		for(int i = 0; i < credits->lineCount; ++i) {
+			auto scope(script.getScope(i + 1));	// Lua arrays are indexed from 1
+			credits->lines[i] = script.get<std::string>("text");
+			credits->lineSize[i] = script.has("size") ? script.get<int>("size") : 30;
+		}
+	}
+	credits->endLine = script.get<std::string>({"endLine", "text"});
+	credits->endLineSize = script.get<int>({"endLine", "size"});
 }
 
 void updateCredits(Credits* credits)
@@ -47,8 +39,6 @@ void updateCredits(Credits* credits)
 
 void destroyCredits(Credits* credits)
 {
-    for(int i = 0; i < credits->lineCount; i++) free(credits->lines[i]);
-
-    free(credits);
+    delete credits;
 }
 

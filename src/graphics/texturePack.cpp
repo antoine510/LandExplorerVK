@@ -1,6 +1,6 @@
 #include "texturePack.h"
 #include "graphics.h"
-#include "utility/xmlTools.h"
+#include "luaScript.h"
 #include "terrain/blockTypes.h"
 #include <SDL_image.h>
 
@@ -9,45 +9,32 @@ TexturePack* initTexturePack(Graphics* gfx) {
 
 	int texSetCount = 0, buttonSetCount = 0;
 
-	xmlDocPtr texturesDoc = parseXML("textures/textures.xml");
-	xmlNodePtr texture = xmlDocGetRootElement(texturesDoc)->xmlChildrenNode;
-	while(texture->type == XML_TEXT_NODE) texture = texture->next;
+	LuaScript texturesLua("textures/textures.lua", {{"TERRAIN_WIDTH", TERRAIN_WIDTH}});
 
-	while(texture) {
-		std::string filename("textures/");
-		filename += asStringl(texture, "path");
-		if(checkName(texture, "blocAtlas")) {
-			texPack->blocAtlas = new DeviceImage(filename);
-		} else if(checkName(texture, "backwallAtlas")) {
-			texPack->backwallAtlas = new DeviceImage(filename);
-		} else if(checkName(texture, "breakingBloc")) {
-			texPack->breakingBloc = new Sprite(filename);
-			texPack->breakingBloc->setClipSize(BLOC_SIZE, BLOC_SIZE);
-		} else if(checkName(texture, "playerHearth")) {
-			texPack->playerHearth = new Sprite(filename);
-			texPack->playerHearth->setScreenOrigin(1, 0);
-		} else if(checkName(texture, "itemSlot")) {
-			texPack->itemSlot = new Sprite(filename);
-		} else if(checkName(texture, "itemAtlas")) {
-			texPack->itemAtlas = new Sprite(filename);
-			texPack->itemAtlas->setClipSize(TEXTURE_ITEM_SIZE, TEXTURE_ITEM_SIZE);
-		} else if(checkName(texture, "backgroundRenderer")) {
-			backgroundRendererLoadTextures(gfx->bgRenderer, texture);
-		} else if(checkName(texture, "menuRenderer")) {
-			menuRendererLoadTextures(&gfx->menuRenderer, texture);
-		} else if(checkName(texture, "texSet")) {
-			if(texSetCount >= MAX_TEXTURESET_COUNT) printf("Error while assigning textureSet, please increase MAX_TEXTURESET_COUNT");
-			texPack->texSets[texSetCount] = createTextureSet(texture, filename.c_str());
-			texSetCount++;
-		} else if(checkName(texture, "buttonSet")) {
-			if(buttonSetCount >= MAX_BUTTONSET_COUNT) printf("Error while assigning buttonSet, please increase MAX_BUTTONSET_COUNT");
-			texPack->buttonSets[buttonSetCount] = createTextureSet(texture, filename.c_str());
-			buttonSetCount++;
-		}
+	texPack->blocAtlas = new DeviceImage(texturesLua.get<std::string>("blocAtlas"));
+	texPack->backwallAtlas = new DeviceImage(texturesLua.get<std::string>("backwallAtlas"));
+	texPack->breakingBloc = texturesLua.get<Sprite*>("breakingBloc");
+	texPack->playerHearth = texturesLua.get<Sprite*>("playerHearth");
+	texPack->itemSlot = texturesLua.get<Sprite*>("itemSlot");
+	texPack->itemAtlas = texturesLua.get<Sprite*>("itemAtlas");
 
-		do texture = texture->next; while(texture && texture->type == XML_TEXT_NODE);
+	{
+		auto scope(texturesLua.getScope("backgroundRenderer"));
+		backgroundRendererLoadTextures(gfx->bgRenderer, texturesLua);
 	}
-	xmlFreeDoc(texturesDoc);
+	{
+		auto scope(texturesLua.getScope("menuRenderer"));
+		menuRendererLoadTextures(&gfx->menuRenderer, texturesLua);
+	}
+	{
+		auto scope(texturesLua.getScope("texSets"));
+		int texSetCount = texturesLua.getLength();
+		if(texSetCount >= MAX_TEXTURESET_COUNT) throw std::runtime_error("Error while assigning textureSet, please increase MAX_TEXTURESET_COUNT");
+		for(int i = 0; i < texSetCount; ++i) {
+			auto scope(texturesLua.getScope(i + 1));	// Lua arrays are indexed from 1
+			texPack->texSets[i] = createTextureSet(texturesLua);
+		}
+	}
 
 	return texPack;
 }

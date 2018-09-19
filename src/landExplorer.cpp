@@ -6,15 +6,9 @@
 #include <SDL_image.h>
 
 void initExplorer(LandExplorer* landExplorer) {
-	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER) != 0) {
-		printf("Failed to initialize SDL : %s", SDL_GetError());
-	}
-	if(IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
-		printf("Failed to initialize SDL_image : %s", IMG_GetError());
-	}
-	if(TTF_Init() == -1) {
-		printf("Failed to initialize SDL_TTF: %s\n", TTF_GetError());
-	}
+	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER) != 0) throw std::runtime_error(std::string("Failed to initialize SDL: ") + SDL_GetError());
+	if(IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) throw std::runtime_error(std::string("Failed to initialize SDL_image: ") + IMG_GetError());
+	if(TTF_Init() != 0) throw std::runtime_error(std::string("Failed to initialize SDL_TTF: ") + TTF_GetError());
 
 	timerStack = initTimerStack();
 	initKeystates(&landExplorer->keyStates);
@@ -24,7 +18,7 @@ void initExplorer(LandExplorer* landExplorer) {
 	landExplorer->mapp = initMap();
 	landExplorer->editor = initEditor(&landExplorer->gfx->viewOrigin);
 	landExplorer->credits = createCredits();
-	landExplorer->level = NULL;
+	landExplorer->level = nullptr;
 
 	soundstack_changeMusic(MUSIC_TITLESCREEN);
 
@@ -113,7 +107,14 @@ void destroyExplorer(LandExplorer* landExplorer) {
 int main(int argc, char* argv[]) {
 	LandExplorer landExplorer;
 
-	initExplorer(&landExplorer);
+	try {
+		initExplorer(&landExplorer);
+	} catch(const std::exception& e) {
+		std::cerr << "FATAL: Couldn't initialize game: " << e.what() << std::endl;
+		system("PAUSE");
+		return 0;
+	}
+
 	mainLoop(&landExplorer);
 	destroyExplorer(&landExplorer);
 

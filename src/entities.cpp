@@ -89,7 +89,7 @@ void updateWeapon(Entities* entities, int id, PlayerControl* pControl)
 
 		float x = std::cos(Constant::deg2rad(angle - 45.0f)) * 0.8f + centerX;
 		float y = -std::sin(Constant::deg2rad(angle - 45.0f)) * 0.8f + centerY;
-	
+
         entities->collData[id].pos.x = std::cos(Constant::deg2rad(angle - 45.0f)) * 2.5f + centerX;
         entities->collData[id].pos.y = -std::sin(Constant::deg2rad(angle - 45.0f)) * 2.5f + centerY;
 		entities->gfxData[id].angle = angle;

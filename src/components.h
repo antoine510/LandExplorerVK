@@ -67,12 +67,12 @@ typedef struct TriggerData {
     void (*trigger)(void*);
 } TriggerData;
 
-Status createStatus(char* name, float HP, float knockback);
+Status createStatus(const std::string& name, float HP, float knockback);
 GfxData createGfxData(int texID, unsigned int texState);
 DynamicData createDynamicData(Vec2 velocity);
-CollisionData createCollisionData(Vec2 pos, Vec2 sz, const char* collTypeStr);
-AIData createAIData(const char* aiTypeStr, float aiRange);
-WeaponData createWeaponData(float velocity, float knockback, int damage, const char* weaponTypeStr);
+CollisionData createCollisionData(Vec2 pos, Vec2 sz, const std::string& collTypeStr);
+AIData createAIData(const std::string& aiTypeStr, float aiRange);
+WeaponData createWeaponData(float velocity, float knockback, int damage, const std::string& weaponTypeStr);
 
-void deleteStatus(Status status);
+void deleteStatus(Status& status);
 

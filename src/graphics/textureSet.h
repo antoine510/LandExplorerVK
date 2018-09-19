@@ -3,7 +3,6 @@
 #include "common.h"
 #include "animation.h"
 #include "sprite.h"
-#include "utility/xmlTools.h"
 
 #define MAX_TEXTURE_COUNT 5
 #define MAX_ANIMATION_COUNT 5
@@ -20,7 +19,7 @@ typedef struct TextureSet {
     int curUser;
 } TextureSet;
 
-TextureSet* createTextureSet(xmlNodePtr texSetNode, const char* path);
+TextureSet* createTextureSet(LuaScript& script);
 
 void setTexture(TextureSet* texSet, unsigned int textureID, Sprite* tex);
 void setAnimation(TextureSet* texSet, Animation* animation, unsigned int id);

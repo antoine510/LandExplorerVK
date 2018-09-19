@@ -1,84 +1,66 @@
 #include "menu.h"
-#include "utility/xmlTools.h"
+#include "luaScript.h"
 #include "utility/mathUtility.h"
 #include "sound.h"
 #include "graphics/displayInfo.h"
 #include "graphics/graphics.h"
 
-static void initSubMenu(SubMenu* subMenu, xmlNodePtr subMenuNode, Vec2 screenOrigin);
+static void initSubMenu(SubMenu& subMenu, LuaScript& script, Vec2 screenOrigin);
 static void createKeyLabels(SubMenu* submenu, KeyStates* keystates);
 static void updateKeyLabels(SubMenu* submenu, KeyStates* keystates, KeyType type, int index);
 
 Menu* initMenu(KeyStates* keystates) {
-	Menu* menu = (Menu*)calloc(1, sizeof(Menu));
+	Menu* menu = new Menu;
 
 	menu->currentSubMenu = 0;
 	menu->stateChanged = true;
 
-	xmlDocPtr menuDoc = parseXML("ui/menu.xml");
-	xmlNodePtr menuNode = xmlDocGetRootElement(menuDoc);
+	LuaScript script("ui/menu.lua");
 
-	Vec2 alignment = Vec2{ asFloatl(menuNode, "Walign"), asFloatl(menuNode, "Halign") };
+	Vec2 screenOrigin(script.get<float>("Walign"), script.get<float>("Halign"));
 
-	xmlNodePtr subMenuNode = menuNode->children;
-	while(subMenuNode->type == XML_TEXT_NODE) subMenuNode = subMenuNode->next;
-	while(subMenuNode) {
-		if(checkName(subMenuNode, "SubMenu")) {
-			int subMenuID = asIntl(subMenuNode, "id");
 
-			initSubMenu(&menu->subMenus[subMenuID], subMenuNode, alignment);
-		}
-
-		do subMenuNode = subMenuNode->next; while(subMenuNode && subMenuNode->type == XML_TEXT_NODE);
+	auto scope(script.getScope("submenus"));
+	int submenuCount = script.getLength();
+	if(submenuCount != SUBMENU_COUNT) throw std::runtime_error("Error while assigning submenus: wrong submenu count");
+	for(int i = 0; i < submenuCount; ++i) {
+		auto scope(script.getScope(i + 1));	// Lua arrays are indexed from 1
+		initSubMenu(menu->subMenus[i], script, screenOrigin);
 	}
-
-	xmlFreeDoc(menuDoc);
 
 	createKeyLabels(&menu->subMenus[SUBMENU_KEY_BINDINGS], keystates);
 
 	return menu;
 }
 
-void initSubMenu(SubMenu* subMenu, xmlNodePtr subMenuNode, Vec2 screenOrigin) {
-	subMenu->name = asStringl(subMenuNode, "name");
-	subMenu->layout = layout_create();
-	subMenu->buttonCount = 0;
-	subMenu->labelCount = 0;
+void initSubMenu(SubMenu& subMenu, LuaScript& script, Vec2 screenOrigin) {
+	subMenu.name = script.get<std::string>("name");
+	subMenu.layout = layout_create();
 
-	xmlNodePtr button = subMenuNode->children;
-	while(button->type == XML_TEXT_NODE) button = button->next;
-	while(button) {
-		if(checkName(button, "Button")) {
-			int buttonID = asIntl(button, "id");
-			SDL_Rect buttonRect = getRectl(button);
-			char* buttonName = asStringl(button, "name");
-			subMenu->buttons[buttonID] = createButton(buttonRect, buttonName, screenOrigin);
-			free(buttonName);
-
-			layout_addElement(subMenu->layout, rectOriginRatio(buttonRect, 0, 0.5f), buttonID, screenOrigin);
-			subMenu->buttonCount++;
-		} else if(checkName(button, "Slider")) {
-			int sliderID = asIntl(button, "id");
-			subMenu->sliders[sliderID] = slider_create(asStringl(button, "name"), getPosl(button), asIntl(button, "value"),
-													   asIntl(button, "min"), asIntl(button, "max"), screenOrigin);
-			SDL_Rect minusRect = slider_getMinusRect(subMenu->sliders[sliderID]);
-			SDL_Rect plusRect = slider_getPlusRect(subMenu->sliders[sliderID]);
-			subMenu->buttons[2 * sliderID] = createButton(minusRect, "-", screenOrigin);
-			subMenu->buttons[2 * sliderID + 1] = createButton(plusRect, "+", screenOrigin);
-			layout_addElement(subMenu->layout, rectOriginRatio(minusRect, 0, 0.5f), subMenu->buttonCount, screenOrigin);
-			layout_addElement(subMenu->layout, rectOriginRatio(plusRect, 0, 0.5f), subMenu->buttonCount + 1, screenOrigin);
-			subMenu->buttonCount += 2;
-		} else if(checkName(button, "Label")) {
-			int labelID = asIntl(button, "id");
-			subMenu->labels[labelID] = label_create(asStringl(button, "text"), getPosl(button), screenOrigin);
-			subMenu->labelCount++;
+	auto scope(script.getScope("elements"));
+	int eltCount = script.getLength();
+	for(int i = 0; i < eltCount; ++i) {
+		auto scope(script.getScope(i + 1));
+		auto type = script.get<std::string>("type");
+		if(type == "button") {
+			subMenu.buttons.emplace_back(createButton(script.get<SDL_Rect>(), script.get<std::string>("name"), screenOrigin));
+			layout_addElement(subMenu.layout, rectOriginRatio(script.get<SDL_Rect>(), 0, 0.5f), (int)subMenu.buttons.size() - 1, screenOrigin);
+		} else if(type == "slider") {
+			subMenu.sliders.emplace_back(slider_create(script.get<std::string>("name"), script.get<SDL_Point>(),
+													   script.get<int>("value"), script.get<int>("min"), script.get<int>("max"), screenOrigin));
+			SDL_Rect minusRect = slider_getMinusRect(subMenu.sliders.back());
+			SDL_Rect plusRect = slider_getPlusRect(subMenu.sliders.back());
+			subMenu.buttons.emplace_back(createButton(minusRect, "-", screenOrigin));
+			subMenu.buttons.emplace_back(createButton(plusRect, "+", screenOrigin));
+			layout_addElement(subMenu.layout, rectOriginRatio(minusRect, 0, 0.5f), (int)subMenu.buttons.size() - 2, screenOrigin);
+			layout_addElement(subMenu.layout, rectOriginRatio(plusRect, 0, 0.5f), (int)subMenu.buttons.size() - 1, screenOrigin);
+		} else if(type == "label") {
+			subMenu.labels.emplace_back(label_create(script.get<std::string>("text"), script.get<SDL_Point>(), screenOrigin));
 		}
-
-		do button = button->next; while(button && button->type == XML_TEXT_NODE);
 	}
 
-	subMenu->buttons[0]->state = BUTTON_SELECTED;   //Select the first button (there is at least one button)
-	subMenu->selection = 0;
+	subMenu.buttons[0].state = BUTTON_SELECTED;   //Select the first button (there is at least one button)
+	subMenu.selection = 0;
 }
 
 ModeUpdateResult updateMenu(Menu* menu, KeyStates* keyStates, Graphics* gfx) {
@@ -89,25 +71,25 @@ ModeUpdateResult updateMenu(Menu* menu, KeyStates* keyStates, Graphics* gfx) {
 	if(x != menu->oldMousePos.x || y != menu->oldMousePos.y) {
 		int mouseSelection = layout_getElement(subMenu->layout, x, y);
 		if(mouseSelection != -1 && mouseSelection != subMenu->selection) {
-			subMenu->buttons[subMenu->selection]->state = BUTTON_UNSELECTED;
+			subMenu->buttons[subMenu->selection].state = BUTTON_UNSELECTED;
 			subMenu->selection = mouseSelection;
-			subMenu->buttons[subMenu->selection]->state = BUTTON_SELECTED;
+			subMenu->buttons[subMenu->selection].state = BUTTON_SELECTED;
 			menu->stateChanged = true;
 			soundstack_addSound(SOUND_MENU_TICK);
 		}
 		menu->oldMousePos.x = x; menu->oldMousePos.y = y;
 	}
 
-	if(isKeyHeld(keyStates, key_down) && subMenu->selection < subMenu->buttonCount - 1) {
-		subMenu->buttons[subMenu->selection]->state = BUTTON_UNSELECTED;
+	if(isKeyHeld(keyStates, key_down) && subMenu->selection < subMenu->buttons.size() - 1) {
+		subMenu->buttons[subMenu->selection].state = BUTTON_UNSELECTED;
 		subMenu->selection++;
-		subMenu->buttons[subMenu->selection]->state = BUTTON_SELECTED;
+		subMenu->buttons[subMenu->selection].state = BUTTON_SELECTED;
 		menu->stateChanged = true;
 		soundstack_addSound(SOUND_MENU_TICK);
 	} else if(isKeyHeld(keyStates, key_up) && subMenu->selection > 0) {
-		subMenu->buttons[subMenu->selection]->state = BUTTON_UNSELECTED;
+		subMenu->buttons[subMenu->selection].state = BUTTON_UNSELECTED;
 		subMenu->selection--;
-		subMenu->buttons[subMenu->selection]->state = BUTTON_SELECTED;
+		subMenu->buttons[subMenu->selection].state = BUTTON_SELECTED;
 		menu->stateChanged = true;
 		soundstack_addSound(SOUND_MENU_TICK);
 	}
@@ -192,8 +174,8 @@ ModeUpdateResult updateMenu(Menu* menu, KeyStates* keyStates, Graphics* gfx) {
 				soundstack_addSound(SOUND_MENU_CLOSE);
 				break;
 			}
-			soundstack_changeMasterVolume((float)subMenu->sliders[0]->value / 100.0f);
-			soundstack_changeMusicVolume((float)subMenu->sliders[1]->value / 100.0f);
+			soundstack_changeMasterVolume((float)subMenu->sliders[0].value / 100.0f);
+			soundstack_changeMusicVolume((float)subMenu->sliders[1].value / 100.0f);
 			break;
 		case SUBMENU_KEY_BINDINGS:
 			switch(subMenu->selection) {
@@ -228,17 +210,16 @@ ModeUpdateResult updateMenu(Menu* menu, KeyStates* keyStates, Graphics* gfx) {
 }
 
 void createKeyLabels(SubMenu* submenu, KeyStates* keystates) {
-	submenu->labels[0] = label_create(keystates_getKeyName(keystates, key_quit), SDL_Point{ submenu->buttons[0]->rect.x + 110, submenu->buttons[0]->rect.y }, submenu->buttons[0]->screenOrigin);
-	submenu->labels[1] = label_create(keystates_getKeyName(keystates, key_left), SDL_Point{ submenu->buttons[1]->rect.x + 110, submenu->buttons[1]->rect.y }, submenu->buttons[1]->screenOrigin);
-	submenu->labels[2] = label_create(keystates_getKeyName(keystates, key_right), SDL_Point{ submenu->buttons[2]->rect.x + 110, submenu->buttons[2]->rect.y }, submenu->buttons[2]->screenOrigin);
-	submenu->labels[3] = label_create(keystates_getKeyName(keystates, key_up), SDL_Point{ submenu->buttons[3]->rect.x + 110, submenu->buttons[3]->rect.y }, submenu->buttons[3]->screenOrigin);
-	submenu->labels[4] = label_create(keystates_getKeyName(keystates, key_down), SDL_Point{ submenu->buttons[4]->rect.x + 110, submenu->buttons[4]->rect.y }, submenu->buttons[4]->screenOrigin);
-	submenu->labels[5] = label_create(keystates_getKeyName(keystates, key_jump), SDL_Point{ submenu->buttons[5]->rect.x + 160, submenu->buttons[5]->rect.y }, submenu->buttons[5]->screenOrigin);
-	submenu->labels[6] = label_create(keystates_getKeyName(keystates, key_select), SDL_Point{ submenu->buttons[6]->rect.x + 160, submenu->buttons[6]->rect.y }, submenu->buttons[6]->screenOrigin);
-	submenu->labels[7] = label_create(keystates_getKeyName(keystates, key_map), SDL_Point{ submenu->buttons[7]->rect.x + 160, submenu->buttons[7]->rect.y }, submenu->buttons[7]->screenOrigin);
-	submenu->labels[8] = label_create(keystates_getKeyName(keystates, key_editor), SDL_Point{ submenu->buttons[8]->rect.x + 160, submenu->buttons[8]->rect.y }, submenu->buttons[8]->screenOrigin);
-	submenu->labels[9] = label_create(keystates_getKeyName(keystates, key_inventory), SDL_Point{ submenu->buttons[9]->rect.x + 160, submenu->buttons[9]->rect.y }, submenu->buttons[9]->screenOrigin);
-	submenu->labelCount = 10;
+	submenu->labels.emplace_back(label_create(keystates_getKeyName(keystates, key_quit), SDL_Point{ submenu->buttons[0].rect.x + 110, submenu->buttons[0].rect.y }, submenu->buttons[0].screenOrigin));
+	submenu->labels.emplace_back(label_create(keystates_getKeyName(keystates, key_left), SDL_Point{ submenu->buttons[1].rect.x + 110, submenu->buttons[1].rect.y }, submenu->buttons[1].screenOrigin));
+	submenu->labels.emplace_back(label_create(keystates_getKeyName(keystates, key_right), SDL_Point{ submenu->buttons[2].rect.x + 110, submenu->buttons[2].rect.y }, submenu->buttons[2].screenOrigin));
+	submenu->labels.emplace_back(label_create(keystates_getKeyName(keystates, key_up), SDL_Point{ submenu->buttons[3].rect.x + 110, submenu->buttons[3].rect.y }, submenu->buttons[3].screenOrigin));
+	submenu->labels.emplace_back(label_create(keystates_getKeyName(keystates, key_down), SDL_Point{ submenu->buttons[4].rect.x + 110, submenu->buttons[4].rect.y }, submenu->buttons[4].screenOrigin));
+	submenu->labels.emplace_back(label_create(keystates_getKeyName(keystates, key_jump), SDL_Point{ submenu->buttons[5].rect.x + 160, submenu->buttons[5].rect.y }, submenu->buttons[5].screenOrigin));
+	submenu->labels.emplace_back(label_create(keystates_getKeyName(keystates, key_select), SDL_Point{ submenu->buttons[6].rect.x + 160, submenu->buttons[6].rect.y }, submenu->buttons[6].screenOrigin));
+	submenu->labels.emplace_back(label_create(keystates_getKeyName(keystates, key_map), SDL_Point{ submenu->buttons[7].rect.x + 160, submenu->buttons[7].rect.y }, submenu->buttons[7].screenOrigin));
+	submenu->labels.emplace_back(label_create(keystates_getKeyName(keystates, key_editor), SDL_Point{ submenu->buttons[8].rect.x + 160, submenu->buttons[8].rect.y }, submenu->buttons[8].screenOrigin));
+	submenu->labels.emplace_back(label_create(keystates_getKeyName(keystates, key_inventory), SDL_Point{ submenu->buttons[9].rect.x + 160, submenu->buttons[9].rect.y }, submenu->buttons[9].screenOrigin));
 }
 
 void updateKeyLabels(SubMenu* submenu, KeyStates* keystates, KeyType type, int index) {
@@ -246,19 +227,9 @@ void updateKeyLabels(SubMenu* submenu, KeyStates* keystates, KeyType type, int i
 }
 
 void destroyMenu(Menu* menu) {
-	int i, j;
+	int i;
 	for(i = 0; i < SUBMENU_COUNT; i++) {
 		layout_destroy(menu->subMenus[i].layout);
-		free(menu->subMenus[i].name);
-		for(j = 0; j < menu->subMenus[i].buttonCount; j++) {
-			destroyButton(menu->subMenus[i].buttons[j]);
-		}
-		for(j = 0; j < menu->subMenus[i].labelCount; j++) {
-			label_destroy(&menu->subMenus[i].labels[j]);
-		}
-		for(j = 0; j < MAX_MENU_ELEMENT_COUNT; j++) {
-			if(menu->subMenus[i].sliders[j] != NULL) slider_destroy(menu->subMenus[i].sliders[j]);
-		}
 	}
-	free(menu);
+	delete menu;
 }

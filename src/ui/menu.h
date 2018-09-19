@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "common.h"
 #include "button.h"
 #include "label.h"
@@ -19,11 +21,10 @@
 #define SUBMENU_COUNT 6
 
 typedef struct SubMenu {
-    char* name;
-    Button* buttons[MAX_MENU_ELEMENT_COUNT];
-    Label labels[MAX_MENU_ELEMENT_COUNT];
-    Slider* sliders[MAX_MENU_ELEMENT_COUNT];
-    int buttonCount, labelCount;
+    std::string name;
+	std::vector<Button> buttons;
+	std::vector<Label> labels;
+	std::vector<Slider> sliders;
 
     Layout* layout;
     int selection;

@@ -9,5 +9,3 @@ Label label_create(const std::string& name, SDL_Point pos, Vec2 screenOrigin) {
 	return label;
 }
 
-void label_destroy(Label* label) {}
-

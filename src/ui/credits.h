@@ -1,15 +1,15 @@
 #pragma once
 
-#include "../common.h"
+#include "common.h"
 
 #define MAX_CREDIT_LINES 128
 
 typedef struct Credits {
-    char* lines[MAX_CREDIT_LINES];
+    std::string lines[MAX_CREDIT_LINES];
     int lineSize[MAX_CREDIT_LINES];
     int lineCount;
 
-    char* endLine;
+    std::string endLine;
     int endLineSize;
 
     float baseY;

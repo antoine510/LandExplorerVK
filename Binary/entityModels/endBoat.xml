@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-
-<Model>
-	<Rect W="64" H="64"/>
-	<GfxData texID="5" texState="0"/>
-	<CollisionData w="4.0" h="4.0" collType="trigger"/>
-	<TriggerData/>
-</Model>

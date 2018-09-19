@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-
-<Model>
-	<Rect W="16" H="10"/>
-	<GfxData texID="3" texState="0"/>
-	<DynamicData/>
-	<CollisionData w="0.2" h="0.2" collType="weapon"/>
-	<WeaponData velocity="35.0" knockback="6" damage="25" type="arrow"/>
-</Model>
