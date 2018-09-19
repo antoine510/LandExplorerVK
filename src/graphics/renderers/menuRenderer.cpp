@@ -1,5 +1,6 @@
 #include "menuRenderer.h"
 #include "../graphics.h"
+#include "luaScript.h"
 
 #define TITLE_FONT_SIZE 80
 #define BUTTON_FONT_SIZE 35
@@ -7,22 +8,10 @@
 
 static void updateMenuTextures(MenuRenderer* menuRenderer, Graphics* gfx, Menu* menu);
 static void destroyMenuTextures(MenuRenderer* menuRenderer);
-static SliderTextures createSliderTextures(Graphics* gfx, Slider* slider, TTF_Font* font, SDL_Color color);
+static SliderTextures createSliderTextures(Graphics* gfx, const Slider& slider, TTF_Font* font, SDL_Color color);
 
-void menuRendererLoadTextures(MenuRenderer* menuRenderer, xmlNodePtr mainNode) {
-	xmlNodePtr texture = mainNode->children;
-	while(texture->type == XML_TEXT_NODE) texture = texture->next;
-
-	while(texture) {
-		std::string filename("textures/");
-		filename += asStringl(mainNode, "path");
-		filename += asStringl(texture, "path");
-		if(checkName(texture, "outline")) {
-			menuRenderer->outline = new Sprite(filename);
-			menuRenderer->outline->setPosition(10, 10);
-		}
-		do texture = texture->next; while(texture && texture->type == XML_TEXT_NODE);
-	}
+void menuRendererLoadTextures(MenuRenderer* menuRenderer, LuaScript& script) {
+	menuRenderer->outline = script.get<Sprite*>("outline");
 }
 
 void initMenuRenderer(MenuRenderer* menuRenderer) {
@@ -63,31 +52,30 @@ void updateMenuTextures(MenuRenderer* menuRenderer, Graphics* gfx, Menu* menu) {
 	menuRenderer->titleTexture = new Sprite(subMenu->name, menuRenderer->titleColor, menuRenderer->titleFont);
 	menuRenderer->titleTexture->setPosition(25, 20);
 
-	int i;
-	for(i = 0; i < subMenu->buttonCount; i++) {
+	int i = 0;
+	for(const auto& button : subMenu->buttons) {
 		TTF_Font* buttonFont = (i == subMenu->selection) ? menuRenderer->selectedButtonFont : menuRenderer->buttonFont;
 		SDL_Color buttonColor = (i == subMenu->selection) ? menuRenderer->selectedButtonColor : menuRenderer->buttonColor;
-		menuRenderer->buttonTextures.emplace_back(subMenu->buttons[i]->name, buttonColor, buttonFont);
-		menuRenderer->buttonTextures.back().setScreenOrigin(subMenu->buttons[i]->screenOrigin).setOrigin(0, 0.5f).setPosition(subMenu->buttons[i]->rect.x, subMenu->buttons[i]->rect.y);
+		menuRenderer->buttonTextures.emplace_back(button.name, buttonColor, buttonFont);
+		menuRenderer->buttonTextures.back().setScreenOrigin(button.screenOrigin).setOrigin(0, 0.5f).setPosition(button.rect.x, button.rect.y);
+		++i;
 	}
-	for(i = 0; i < subMenu->labelCount; i++) {
-		menuRenderer->labelTextures.emplace_back(subMenu->labels[i].text, menuRenderer->labelColor, menuRenderer->buttonFont);
-		menuRenderer->labelTextures.back().setScreenOrigin(subMenu->labels[i].screenOrigin).setOrigin(0, 0.5f).setPosition(subMenu->labels[i].pos.x, subMenu->labels[i].pos.y);
+	for(const auto& label : subMenu->labels) {
+		menuRenderer->labelTextures.emplace_back(label.text, menuRenderer->labelColor, menuRenderer->buttonFont);
+		menuRenderer->labelTextures.back().setScreenOrigin(label.screenOrigin).setOrigin(0, 0.5f).setPosition(label.pos.x, label.pos.y);
 	}
-	for(i = 0; i < MAX_MENU_ELEMENT_COUNT; i++) {
-		if(subMenu->sliders[i] != NULL) {
-			menuRenderer->sliderTextures.push_back(createSliderTextures(gfx, subMenu->sliders[i], menuRenderer->buttonFont, menuRenderer->buttonColor));
-		}
+	for(const auto& slider : subMenu->sliders) {
+		menuRenderer->sliderTextures.push_back(createSliderTextures(gfx, slider, menuRenderer->buttonFont, menuRenderer->buttonColor));
 	}
 }
 
-SliderTextures createSliderTextures(Graphics* gfx, Slider* slider, TTF_Font* font, SDL_Color color) {
+SliderTextures createSliderTextures(Graphics* gfx, const Slider& slider, TTF_Font* font, SDL_Color color) {
 	SliderTextures tex;
-	tex.nameTexture = new Sprite(slider->name, color, font);
-	tex.nameTexture->setScreenOrigin(slider->screenOrigin).setOrigin(0, 0.5f).setPosition(slider->pos.x, slider->pos.y);
+	tex.nameTexture = new Sprite(slider.name, color, font);
+	tex.nameTexture->setScreenOrigin(slider.screenOrigin).setOrigin(0, 0.5f).setPosition(slider.pos.x, slider.pos.y);
 
-	tex.valueTexture = new Sprite(std::to_string(slider->value), color, font);
-	tex.valueTexture->setScreenOrigin(slider->screenOrigin).setOrigin(0, 0.5f).setPosition(slider->pos.x + 370, slider->pos.y);
+	tex.valueTexture = new Sprite(std::to_string(slider.value), color, font);
+	tex.valueTexture->setScreenOrigin(slider.screenOrigin).setOrigin(0, 0.5f).setPosition(slider.pos.x + 370, slider.pos.y);
 
 	return tex;
 }

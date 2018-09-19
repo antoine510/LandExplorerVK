@@ -2,6 +2,7 @@
 #include "utility/mathUtility.h"
 #include "terrain/terrainGeneration.h"
 #include "graphics/graphics.h"
+#include "luaScript.h"
 
 static void renderSun(BackgroundRenderer* bgRenderer, vk::CommandBuffer& cmdBuf, float time);
 
@@ -11,28 +12,16 @@ BackgroundRenderer* createBackgroundRenderer() {
 	return bgRenderer;
 }
 
-void backgroundRendererLoadTextures(BackgroundRenderer* bgRenderer, xmlNodePtr mainNode) {
-	xmlNodePtr texture = mainNode->children;
-	while(texture->type == XML_TEXT_NODE) texture = texture->next;
-
-	while(texture) {
-		std::string filename("textures/");
-		filename += asStringl(mainNode, "path");
-		filename += asStringl(texture, "path");
-		if(checkName(texture, "background")) {
-			int index = asIntl(texture, "id");
-			bgRenderer->background[index] = new Sprite(filename);
-			auto& sprite = *bgRenderer->background[index];
-			if(index == BG_BIOMES + BIOME_PLAINS || index == BG_BIOMES + BIOME_MOUNTAINS || index == BG_BIOMES + BIOME_OCEAN) {
-				sprite.setClipSize(TERRAIN_WIDTH * BLOC_SIZE / 2, sprite.getExtent().height).setScale(2.5f).setSampling(true);
-			} else {
-				sprite.setFullscreen();
-			}
-		} else if(checkName(texture, "sun")) {
-			bgRenderer->sun = new Sprite(filename);
-		}
-		do texture = texture->next; while(texture && texture->type == XML_TEXT_NODE);
-	}
+void backgroundRendererLoadTextures(BackgroundRenderer* bgRenderer, LuaScript& script) {
+	bgRenderer->sun = script.get<Sprite*>("sun");
+	auto bgsscope = script.getScope("backgrounds");
+	bgRenderer->background[BG_BIOMES + BIOME_PLAINS] = script.get<Sprite*>("plain");
+	bgRenderer->background[BG_BIOMES + BIOME_MOUNTAINS] = script.get<Sprite*>("mountain");
+	bgRenderer->background[BG_BIOMES + BIOME_OCEAN] = script.get<Sprite*>("ocean");
+	bgRenderer->background[BG_BIOMES + BIOME_UNDERGROUND] = script.get<Sprite*>("underground");
+	bgRenderer->background[BG_MENU] = script.get<Sprite*>("menu");
+	bgRenderer->background[BG_CREATION] = script.get<Sprite*>("generation");
+	bgRenderer->background[BG_WIN] = script.get<Sprite*>("win");
 }
 
 void renderBackground(BackgroundRenderer* bgRenderer, Graphics* gfx, int bgID) {
@@ -47,7 +36,7 @@ void renderBackground(BackgroundRenderer* bgRenderer, Graphics* gfx, int bgID) {
 
 	if(offset != 0) {
 		renderSun(bgRenderer, gfx->cmdBuf, *bgRenderer->levelTime);
-		bg->setColorMod(gfx->texPack->skyColor).setPosition(-(int)(gfx->viewOrigin.x * 8.0f), offset - (int)(gfx->viewOrigin.y * 5.f));
+		bg->setColorMod(gfx->texPack->skyColor).setPosition(-gfx->viewOrigin.x * 8.0f, offset - gfx->viewOrigin.y * 5.f);
 	}
 	bg->draw(gfx->cmdBuf);
 }

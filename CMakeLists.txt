@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 project(LandExplorerVK)
 
-include_directories("src" "Vulkan/Include" "SDL2-2.0.7/include" "libxml2/include" "FMOD/include")
+include_directories("src" "Vulkan/Include" "SDL2-2.0.8/include" "Lua-5.3.5/include" "libxml2/include" "FMOD/include")
 
 if(WIN32)
-	link_directories("SDL2-2.0.7/lib/Win64" "libxml2/lib/Win64" "Vulkan/Lib/Win64" "FMOD/lib/Win64")
+	link_directories("SDL2-2.0.8/lib/Win64" "Lua-5.3.5/lib/Win64" "libxml2/lib/Win64" "Vulkan/Lib/Win64" "FMOD/lib/Win64")
 	add_definitions(-DWIN32_LEAN_AND_MEAN -D_CRT_SECURE_NO_WARNINGS)
 else()
 	add_definitions()

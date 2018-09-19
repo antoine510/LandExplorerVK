@@ -1,57 +1,48 @@
 #include "blockTypes.h"
-#include "utility/xmlTools.h"
+#include "luaScript.h"
 #include "terrain.h"
 
-static BlocType readBlockType(xmlNodePtr blocNode);
+static BlocType readBlockType(LuaScript& script);
 
 static Uint8 defaultCustomFunction(Terrain* terrain, Bloc* bloc) { return 0; }
 
 void initBlockTypes(BlocType* blocTypes) {
-	xmlDocPtr blocTypesDoc = parseXML("terrain/blocTypes.xml");
-	xmlNodePtr bloc = xmlDocGetRootElement(blocTypesDoc)->xmlChildrenNode;
-	while(bloc->type == XML_TEXT_NODE) bloc = bloc->next;
+	LuaScript script("terrain/blocTypes.lua");
 
-	while(bloc) {
-		int blocID = asIntl(bloc, "id");
-		if(checkName(bloc, "Bloc")) {
-			blocTypes[blocID] = readBlockType(bloc);
-		} else if(checkName(bloc, "Backwall")) {
-			blocTypes[blocID + BACKWALL_TYPES_OFFSET] = readBlockType(bloc);
+	{
+		auto scope(script.getScope("blocs"));
+		int blocCount = script.getLength();
+		for(int i = 0; i < blocCount; ++i) {
+			auto scope(script.getScope(i + 1));	// Lua arrays are indexed from 1
+			blocTypes[i] = readBlockType(script);
 		}
-
-		do bloc = bloc->next; while(bloc && bloc->type == XML_TEXT_NODE);
 	}
-	xmlFreeDoc(blocTypesDoc);
+	{
+		auto scope(script.getScope("backwalls"));
+		int backwallCount = script.getLength();
+		for(int i = 0; i < backwallCount; ++i) {
+			auto scope(script.getScope(i + 1));
+			blocTypes[i + BACKWALL_TYPES_OFFSET] = readBlockType(script);
+		}
+	}
 }
 
-BlocType readBlockType(xmlNodePtr blocNode) {
+BlocType readBlockType(LuaScript& script) {
 	BlocType blocType;
 	memset(&blocType, 0, sizeof(BlocType));
 	blocType.getBlocTypeCustomValue = defaultCustomFunction;
 
-	blocType.opacity = asIntl(blocNode, "lightOpacity");
-	blocType.atlasOffset = asIntl(blocNode, "atlasOffset");
-
-	xmlNodePtr blocElement = blocNode->children;
-	SKIP_TEXT(blocElement);
-
-	while(blocElement) {
-		if(checkName(blocElement, "Solid")) {
-			blocType.solid = true;
-		} else if(checkName(blocElement, "Liquid")) {
-			blocType.liquid = true;
-		} else if(checkName(blocElement, "CustomValueFunction")) {
-			char* functionName = asStringl(blocElement, "function");
-			if(!strcmp(functionName, "edges")) {
-				blocType.getBlocTypeCustomValue = getBlocEdges;
-			} else if(!strcmp(functionName, "liquid")) {
-				blocType.getBlocTypeCustomValue = getLiquidCustomValue;
-			}
-			free(functionName);
-		} else { fprintf(stderr, "XML Error : No bloc type attribute named %s\n", blocElement->name); }
-
-		blocElement = blocElement->next;
-		SKIP_TEXT(blocElement);
+	blocType.opacity = script.get<int>("lightOpacity");
+	blocType.atlasOffset = script.get<int>("atlasOffset");
+	blocType.solid = script.hasTrue("solid");
+	blocType.liquid = script.hasTrue("liquid");
+	if(script.has("cvFunction")) {
+		auto cvf = script.get<std::string>("cvFunction");
+		if(cvf == "edges") {
+			blocType.getBlocTypeCustomValue = getBlocEdges;
+		} else if(cvf == "liquid") {
+			blocType.getBlocTypeCustomValue = getLiquidCustomValue;
+		}
 	}
 
 	return blocType;

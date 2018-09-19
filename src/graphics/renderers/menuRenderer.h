@@ -2,7 +2,6 @@
 
 #include "common.h"
 #include "ui/menu.h"
-#include "utility/xmlTools.h"
 #include "graphics/sprite.h"
 #include <SDL_ttf.h>
 
@@ -24,7 +23,7 @@ struct MenuRenderer {
 	Sprite* outline = nullptr;
 };
 
-void menuRendererLoadTextures(MenuRenderer* menuRenderer, xmlNodePtr mainNode);
+void menuRendererLoadTextures(MenuRenderer* menuRenderer, LuaScript& script);
 
 void initMenuRenderer(MenuRenderer* menuRenderer);
 void renderMenu(Graphics* gfx, Menu* menu);

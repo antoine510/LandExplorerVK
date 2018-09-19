@@ -9,12 +9,11 @@
 #define BUTTON_SELECTED 1
 
 typedef struct Button {
-    char name[MAX_BUTTON_NAME_LENGTH];
+    std::string name;
     SDL_Rect rect;
 	Vec2 screenOrigin;
     int state;
 } Button;
 
-Button* createButton(SDL_Rect rect, const char* name, Vec2 screenOrigin = Vec2{});
-void destroyButton(Button* button);
+Button createButton(SDL_Rect rect, std::string name, Vec2 screenOrigin = Vec2{});
 

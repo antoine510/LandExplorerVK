@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common.h"
-#include "utility/xmlTools.h"
 #include "graphics/sprite.h"
 
 #define BG_BIOMES 0
@@ -20,7 +19,7 @@ typedef struct BackgroundRenderer {
 } BackgroundRenderer;
 
 BackgroundRenderer* createBackgroundRenderer();
-void backgroundRendererLoadTextures(BackgroundRenderer* bgRenderer, xmlNodePtr mainNode);
+void backgroundRendererLoadTextures(BackgroundRenderer* bgRenderer, LuaScript& script);
 
 inline void setBackgroundRendererTime(BackgroundRenderer* bgRenderer, float* levelTime) { bgRenderer->levelTime = levelTime; }
 void renderBackground(BackgroundRenderer* bgRenderer, Graphics* gfx, int bgID);

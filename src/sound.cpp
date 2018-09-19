@@ -1,9 +1,9 @@
 #include "sound.h"
-#include "utility/xmlTools.h"
+#include "luaScript.h"
 
-static bool loadSounds(Sound* sound);
-static bool loadSound(Sound* sound, const std::string& path, unsigned int index);
-static bool loadMusic(Sound* sound, const std::string& path, unsigned int index);
+static void loadSounds(Sound* sound);
+static void loadSound(Sound* sound, const std::string& path, unsigned int index);
+static void loadMusic(Sound* sound, const std::string& path, unsigned int index);
 static void destroySounds(Sound* sound);
 
 static void playSound(Sound* sound, int soundFlag);
@@ -72,10 +72,12 @@ Sound* sound_create()
         if(result != FMOD_OK) {fprintf(stderr, "FMOD error : %d while initializing system\n", result); sound->audioAvailable = false;}
     }
 
-    if(sound->audioAvailable && loadSounds(sound) != 0)
-    {
-        fprintf(stderr, "FMOD error : Sound assets loading failed\n"); sound->audioAvailable = false;
-    }
+	try {
+		if(sound->audioAvailable) loadSounds(sound);
+	} catch(const std::exception& e) {
+		std::cerr << "Sound assets loading failed: " << e.what() << std::endl;
+		sound->audioAvailable = false;
+	}
 
     //Initialization of music channel
     if(sound->audioAvailable)
@@ -123,61 +125,39 @@ void sound_destroy(Sound* sound)
 }
 
 
-bool loadSounds(Sound* sound)
+void loadSounds(Sound* sound)
 {
-    xmlDocPtr soundDoc = parseXML("audio/soundAssets.xml");
-	xmlNodePtr soundType = xmlDocGetRootElement(soundDoc)->xmlChildrenNode;
-	while(soundType->type == XML_TEXT_NODE) soundType = soundType->next;
-
-	xmlNodePtr soundNode = soundType->children;
-	while (soundNode)
-    {
-		if (checkName(soundNode, "Sound"))
-		{
-			std::string filename("audio/");
-			filename += asStringl(soundType, "path");
-			filename += asStringl(soundNode, "path");
-            if(loadSound(sound, filename, asIntl(soundNode, "id"))) return true;
+	LuaScript audioLua("audio/soundAssets.lua");
+	{
+		auto soundsScope(audioLua.getScope("sounds"));
+		int soundCount = audioLua.getLength();
+		if(soundCount >= MAX_SOUNDS) throw std::runtime_error("Error while assigning sounds, please increase MAX_SOUNDS");
+		for(int i = 1; i <= soundCount; ++i) {
+			loadSound(sound, audioLua.get<std::string>(i), i);
 		}
-
-        do soundNode = soundNode->next; while(soundNode && soundNode->type == XML_TEXT_NODE);
-    }
-
-    do soundType = soundType->next; while(soundType && soundType->type == XML_TEXT_NODE);
-    xmlNodePtr musicNode = soundType->children;
-
-	while (musicNode)
-    {
-		if (checkName(musicNode, "Music"))
-		{
-			std::string filename("audio/");
-			filename += asStringl(soundType, "path");
-			filename += asStringl(musicNode, "path");
-            if(loadMusic(sound, filename, asIntl(musicNode, "id"))) return true;
+	}
+	{
+		auto musicsScope(audioLua.getScope("musics"));
+		int musicCount = audioLua.getLength();
+		if(musicCount >= MAX_MUSICS) throw std::runtime_error("Error while assigning musics, please increase MAX_MUSICS");
+		for(int i = 1; i <= musicCount; ++i) {
+			loadMusic(sound, audioLua.get<std::string>(i), i);
 		}
-
-        do musicNode = musicNode->next; while(musicNode && musicNode->type == XML_TEXT_NODE);
-    }
-
-	xmlFreeDoc(soundDoc);
-
-	return false;
+	}
 }
 
-bool loadSound(Sound* sound, const std::string& path, unsigned int index)
+void loadSound(Sound* sound, const std::string& path, unsigned int index)
 {
     FMOD_RESULT result = FMOD_System_CreateSound(sound->system, path.c_str(), FMOD_CREATESAMPLE, 0, &sound->sounds[index]);
-    if(result != FMOD_OK) {std::cerr << "FMOD error : Couldn't load sound:" << path << std::endl; return true;}
-    return false;
+    if(result != FMOD_OK) throw std::runtime_error("FMOD error : Couldn't load sound:" + path);
 }
 
-bool loadMusic(Sound* sound, const std::string& path, unsigned int index)
+void loadMusic(Sound* sound, const std::string& path, unsigned int index)
 {
     FMOD_RESULT result = FMOD_System_CreateSound(sound->system, path.c_str(), FMOD_CREATESTREAM | FMOD_LOOP_NORMAL, 0, &sound->musics[index]);
-    if(result != FMOD_OK) { std::cerr << "FMOD error : Couldn't load music:" << path << std::endl; return true;}
+	if(result != FMOD_OK) throw std::runtime_error("FMOD error : Couldn't load music:" + path);
 
     FMOD_Sound_SetLoopCount(sound->musics[index], -1);
-    return false;
 }
 
 void setMusicVolume(Sound* sound, float volume)
