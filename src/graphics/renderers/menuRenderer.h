@@ -6,21 +6,23 @@
 #include "graphics/sprite.h"
 #include <SDL_ttf.h>
 
-typedef struct SliderTextures {
+struct SliderTextures {
     Sprite* nameTexture, *valueTexture;
-} SliderTextures;
+};
 
-typedef struct MenuRenderer {
+struct MenuRenderer {
     TTF_Font* titleFont, *buttonFont, *selectedButtonFont;
     SDL_Color titleColor, buttonColor, selectedButtonColor, labelColor;
 
-	Sprite* titleTexture;
-	Sprite* buttonTexture[MAX_MENU_ELEMENT_COUNT];
-	Sprite* selectedButtonTexture;
-	Sprite* labelTexture[MAX_MENU_ELEMENT_COUNT];
-    SliderTextures sliderTextures[MAX_MENU_ELEMENT_COUNT];
-	Sprite* outline;
-} MenuRenderer;
+	Sprite* titleTexture = nullptr;
+	//Sprite* buttonTexture[MAX_MENU_ELEMENT_COUNT];
+	//Sprite* labelTexture[MAX_MENU_ELEMENT_COUNT];
+    //SliderTextures sliderTextures[MAX_MENU_ELEMENT_COUNT];
+	std::vector<Sprite> buttonTextures;
+	std::vector<Sprite> labelTextures;
+	std::vector<SliderTextures> sliderTextures;
+	Sprite* outline = nullptr;
+};
 
 void menuRendererLoadTextures(MenuRenderer* menuRenderer, xmlNodePtr mainNode);
 

@@ -26,8 +26,6 @@ void menuRendererLoadTextures(MenuRenderer* menuRenderer, xmlNodePtr mainNode) {
 }
 
 void initMenuRenderer(MenuRenderer* menuRenderer) {
-	memset(menuRenderer, 0, sizeof(MenuRenderer));
-
 	menuRenderer->titleFont = TTF_OpenFont("txt.ttf", TITLE_FONT_SIZE);
 	menuRenderer->buttonFont = TTF_OpenFont("txt.ttf", BUTTON_FONT_SIZE);
 	menuRenderer->selectedButtonFont = TTF_OpenFont("txt.ttf", SELECTED_BUTTON_FONT_SIZE);
@@ -48,21 +46,13 @@ void renderMenu(Graphics* gfx, Menu* menu) {
 
 	gfx->menuRenderer.outline->draw(gfx->cmdBuf);
 	gfx->menuRenderer.titleTexture->draw(gfx->cmdBuf);
-	int i;
-	for(i = 0; i < menu->subMenus[menu->currentSubMenu].buttonCount; i++) {
-		if(i != menu->subMenus[menu->currentSubMenu].selection) gfx->menuRenderer.buttonTexture[i]->draw(gfx->cmdBuf);
-	}
-	for(i = 0; i < menu->subMenus[menu->currentSubMenu].labelCount; i++) {
-		gfx->menuRenderer.labelTexture[i]->draw(gfx->cmdBuf);
-	}
-	for(i = 0; i < MAX_MENU_ELEMENT_COUNT; i++) {
-		if(gfx->menuRenderer.sliderTextures[i].nameTexture != NULL) {
-			gfx->menuRenderer.sliderTextures[i].nameTexture->draw(gfx->cmdBuf);
-			gfx->menuRenderer.sliderTextures[i].valueTexture->draw(gfx->cmdBuf);
-		}
-	}
-	if(gfx->menuRenderer.selectedButtonTexture != NULL) gfx->menuRenderer.selectedButtonTexture->draw(gfx->cmdBuf);
 
+	for(const auto& buttonTex : gfx->menuRenderer.buttonTextures) buttonTex.draw(gfx->cmdBuf);
+	for(const auto& labelTex : gfx->menuRenderer.labelTextures) labelTex.draw(gfx->cmdBuf);
+	for(const auto& sliderTex : gfx->menuRenderer.sliderTextures) {
+		sliderTex.nameTexture->draw(gfx->cmdBuf);
+		sliderTex.valueTexture->draw(gfx->cmdBuf);
+	}
 }
 
 void updateMenuTextures(MenuRenderer* menuRenderer, Graphics* gfx, Menu* menu) {
@@ -75,22 +65,20 @@ void updateMenuTextures(MenuRenderer* menuRenderer, Graphics* gfx, Menu* menu) {
 
 	int i;
 	for(i = 0; i < subMenu->buttonCount; i++) {
-		menuRenderer->buttonTexture[i] = new Sprite(subMenu->buttons[i]->name, menuRenderer->buttonColor, menuRenderer->buttonFont);
-		menuRenderer->buttonTexture[i]->setScreenOrigin(subMenu->buttons[i]->screenOrigin).setOrigin(0, 0.5f).setPosition(subMenu->buttons[i]->rect.x, subMenu->buttons[i]->rect.y);
+		TTF_Font* buttonFont = (i == subMenu->selection) ? menuRenderer->selectedButtonFont : menuRenderer->buttonFont;
+		SDL_Color buttonColor = (i == subMenu->selection) ? menuRenderer->selectedButtonColor : menuRenderer->buttonColor;
+		menuRenderer->buttonTextures.emplace_back(subMenu->buttons[i]->name, buttonColor, buttonFont);
+		menuRenderer->buttonTextures.back().setScreenOrigin(subMenu->buttons[i]->screenOrigin).setOrigin(0, 0.5f).setPosition(subMenu->buttons[i]->rect.x, subMenu->buttons[i]->rect.y);
 	}
 	for(i = 0; i < subMenu->labelCount; i++) {
-		menuRenderer->labelTexture[i] = new Sprite(subMenu->labels[i].text, menuRenderer->labelColor, menuRenderer->buttonFont);
-		menuRenderer->labelTexture[i]->setScreenOrigin(subMenu->labels[i].screenOrigin).setOrigin(0, 0.5f).setPosition(subMenu->labels[i].pos.x, subMenu->labels[i].pos.y);
+		menuRenderer->labelTextures.emplace_back(subMenu->labels[i].text, menuRenderer->labelColor, menuRenderer->buttonFont);
+		menuRenderer->labelTextures.back().setScreenOrigin(subMenu->labels[i].screenOrigin).setOrigin(0, 0.5f).setPosition(subMenu->labels[i].pos.x, subMenu->labels[i].pos.y);
 	}
 	for(i = 0; i < MAX_MENU_ELEMENT_COUNT; i++) {
 		if(subMenu->sliders[i] != NULL) {
-			menuRenderer->sliderTextures[i] = createSliderTextures(gfx, subMenu->sliders[i], menuRenderer->buttonFont, menuRenderer->buttonColor);
+			menuRenderer->sliderTextures.push_back(createSliderTextures(gfx, subMenu->sliders[i], menuRenderer->buttonFont, menuRenderer->buttonColor));
 		}
 	}
-
-	menuRenderer->selectedButtonTexture = new Sprite(subMenu->buttons[subMenu->selection]->name, menuRenderer->selectedButtonColor, menuRenderer->selectedButtonFont);
-	menuRenderer->selectedButtonTexture->setOrigin(0, 0.5f).setPosition(subMenu->buttons[subMenu->selection]->rect.x,
-																		subMenu->buttons[subMenu->selection]->rect.y);
 }
 
 SliderTextures createSliderTextures(Graphics* gfx, Slider* slider, TTF_Font* font, SDL_Color color) {
@@ -108,21 +96,13 @@ void destroyMenuTextures(MenuRenderer* menuRenderer) {
 	delete menuRenderer->titleTexture;
 	menuRenderer->titleTexture = nullptr;
 
-	int i;
-	for(i = 0; i < MAX_MENU_ELEMENT_COUNT; i++) {
-		delete menuRenderer->buttonTexture[i];
-		menuRenderer->buttonTexture[i] = nullptr;
-
-		delete menuRenderer->labelTexture[i];
-		menuRenderer->labelTexture[i] = nullptr;
-
-		delete menuRenderer->sliderTextures[i].nameTexture;
-		delete menuRenderer->sliderTextures[i].valueTexture;
-		menuRenderer->sliderTextures[i].nameTexture = nullptr;
-		menuRenderer->sliderTextures[i].valueTexture = nullptr;
+	menuRenderer->buttonTextures.clear();
+	menuRenderer->labelTextures.clear();
+	for(const auto& sliderTex : menuRenderer->sliderTextures) {
+		delete sliderTex.nameTexture;
+		delete sliderTex.valueTexture;
 	}
-	delete menuRenderer->selectedButtonTexture;
-	menuRenderer->selectedButtonTexture = NULL;
+	menuRenderer->sliderTextures.clear();
 }
 
 void destroyMenuRenderer(MenuRenderer* menuRenderer) {

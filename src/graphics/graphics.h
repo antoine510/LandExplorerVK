@@ -23,7 +23,6 @@ struct Graphics {
     SDL_Window* window;
 	Swapchain* swapchain;
 	DescriptorSet* terrainDescSet;
-	Shader* terrainVert, terrainFrag;
 
 	vk::CommandBuffer cmdBuf;
 

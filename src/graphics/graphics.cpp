@@ -13,7 +13,7 @@ TerrainRenderer* terrainRenderer = nullptr;
 SpriteRenderer* spriteRenderer = nullptr;
 
 Graphics* initGraphics() {
-	Graphics* gfx = (Graphics*)malloc(sizeof(Graphics));
+	Graphics* gfx = new Graphics;
 
 	gfx->window = SDL_CreateWindow("Land Explorer", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1920, 1080, SDL_WINDOW_VULKAN);
 	SDL_assert_release(gfx->window != NULL);

@@ -47,7 +47,7 @@ void renderBackground(BackgroundRenderer* bgRenderer, Graphics* gfx, int bgID) {
 
 	if(offset != 0) {
 		renderSun(bgRenderer, gfx->cmdBuf, *bgRenderer->levelTime);
-		bg->setColorMod(gfx->texPack->skyColor).setPosition(-gfx->viewOrigin.x * 8.0f, offset - gfx->viewOrigin.y * 5.f);
+		bg->setColorMod(gfx->texPack->skyColor).setPosition(-(int)(gfx->viewOrigin.x * 8.0f), offset - (int)(gfx->viewOrigin.y * 5.f));
 	}
 	bg->draw(gfx->cmdBuf);
 }

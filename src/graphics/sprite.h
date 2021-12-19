@@ -22,10 +22,12 @@ struct SpriteRenderer {
 		cmdBuf.bindVertexBuffers(0, (vk::Buffer)*_vBuf, (vk::DeviceSize)0u);
 	}
 
-	DescriptorSet& getDescSet() {
-		auto res = std::find_if(_descSets.begin(), _descSets.end(), [](const DescriptorSet& set)->bool { return !set.isWritten(); });
-		SDL_assert(res != _descSets.end());
-		return *res;
+	DescriptorSet* getDescSet() {
+		for(auto& set : _descSets) {
+			if(!set.isWritten()) return &set;
+		}
+		SDL_assert(false);
+		return nullptr;
 	}
 
 	static constexpr int maxSprites = 100;
@@ -45,9 +47,9 @@ public:
 	Sprite(SDL_Surface* srf) : DeviceImage(srf) {}
 	Sprite(const std::string& text, const SDL_Color& color, TTF_Font* font) : DeviceImage(TTF_RenderText_Blended(font, text.c_str(), color)) {}
 	Sprite(unsigned int width, unsigned int height) : DeviceImage(width, height) {}
-	Sprite(const Sprite& other) = delete;
 
-	~Sprite() { _descSet.erase(); }
+	Sprite(const Sprite& other) = delete;
+	Sprite(Sprite&& old) noexcept = default;
 
 	Sprite& setScale(float scale) { setScreenSize(_realSize * scale); return *this; }
 	Sprite& setScale(float xScale, float yScale) { setScreenSize(_realSize * Vec2(xScale, yScale)); return *this; }
@@ -96,7 +98,7 @@ public:
 		return *this;
 	}
 
-	void draw(vk::CommandBuffer& cmdBuf) {
+	void draw(vk::CommandBuffer& cmdBuf) const {
 		cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, spriteRenderer->_pipeline->getLayout(), 0u, (const vk::DescriptorSet&)_descSet, nullptr);
 		cmdBuf.pushConstants<PushConstants>(spriteRenderer->_pipeline->getLayout(), vk::ShaderStageFlagBits::eAllGraphics, 0, _pushConsts);
 		cmdBuf.draw(6, 1, 0, 0);
@@ -113,12 +115,6 @@ private:
 		uint32_t layer = 2;
 	};
 
-	DescriptorSet& genDescSet() {
-		auto& res = spriteRenderer->getDescSet();
-		res.writeBinding(DescriptorSetBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, getImageInfo()));
-		return res;
-	}
-
 	void setScreenSize(Vec2 size) {
 		_pushConsts.sizeRot[0][0] = size.x / (myDisplayMode.w >> 1);
 		_pushConsts.sizeRot[1][1] = size.y / (myDisplayMode.h >> 1);
@@ -127,7 +123,7 @@ private:
 	Vec2 _realSize = Vec2(_extent.width, _extent.height);
 	Vec2 _origin;		// Normalized origin vector
 	Vec2 _screenOrigin;	// Normalized screen origin vector
-	PushConstants _pushConsts = PushConstants(_realSize);
-	DescriptorSet& _descSet = genDescSet();
+	PushConstants _pushConsts{_realSize};
+	DescriptorSetRef _descSet{spriteRenderer->getDescSet(), DescriptorSetBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, getImageInfo())};
 };
 
