@@ -1,6 +1,5 @@
 #include "entities.h"
 #include "entityModels.h"
-#include "utility/xmlTools.h"
 #include "physics/collisions.h"
 #include "player/playerController.h"
 #include "utility/mathUtility.h"

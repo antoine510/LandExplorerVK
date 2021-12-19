@@ -72,7 +72,7 @@ source_group(Terrain				FILES ${SRC_TERRAIN})
 source_group(UI						FILES ${SRC_UI})
 source_group(Utility				FILES ${SRC_UTILITY})
 
-target_link_libraries(LandExplorerVK "SDL2" "SDL2main" "SDL2_ttf" "SDL2_image" "lua" "libxml2" "fmodL")
+target_link_libraries(LandExplorerVK "SDL2" "SDL2main" "SDL2_ttf" "SDL2_image" "lua" "fmodL")
 
 if(WIN32)
 	target_link_libraries(LandExplorerVK "vulkan-1")
